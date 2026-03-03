@@ -12,6 +12,15 @@
         body {
             padding: 0;
             margin: 0;
+            overflow: hidden;
+            touch-action: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        #game {
+            width: 100vw;
+            height: 100vh;
         }
     </style>
 </head>
@@ -54,7 +63,21 @@
         var nextFire = 0;
         var scoreToWin = 10;
 
+        // Start screen variables
+        var gameStarted = false;
+        var startScreenGroup;
+        var leaderboard = [];
+
         function create() {
+            // Enable responsive scaling
+            game.scale.scaleMode = Phaser.ScaleManager.RESIZE;
+            game.scale.pageAlignHorizontally = true;
+            game.scale.pageAlignVertically = true;
+            
+            // Enable touch input
+            game.input.maxPointers = 1;
+            game.input.addPointer();
+            
             game.physics.startSystem(Phaser.Physics.ARCADE);
             game.physics.arcade.gravity.y = 300;
             game.stage.backgroundColor = "#0d2622";
@@ -70,20 +93,197 @@
             emitter.setScale(0.15, 0.3, 0.15, 0.3);
             emitter.setYSpeed(-400, 400);
 
-            fontSize = game.world.width < 500 ? 24 : 40;
-            fruitSize = Math.round(Math.min(game.world.width, game.world.height) * 0.25);
+            // Calculate responsive sizes
+            calculateResponsiveSizes();
 
             createText();
+            
+            // Load leaderboard from localStorage
+            loadLeaderboard();
+            
+            // Create start screen
+            createStartScreen();
+            
+            // Listen for resize events
+            game.scale.onSizeChange.add(onResize, this);
+        }
+        
+        function calculateResponsiveSizes() {
+            // Responsive font sizing based on screen dimensions
+            var minDimension = Math.min(game.world.width, game.world.height);
+            var maxDimension = Math.max(game.world.width, game.world.height);
+            
+            // Scale font based on screen size (works for phones, tablets, totem, PC)
+            if (minDimension < 400) {
+                fontSize = 18; // Small phones
+            } else if (minDimension < 600) {
+                fontSize = 24; // Large phones
+            } else if (minDimension < 900) {
+                fontSize = 32; // Tablets
+            } else if (minDimension < 1200) {
+                fontSize = 40; // Small desktop/totem
+            } else {
+                fontSize = Math.round(minDimension * 0.04); // Large screens/totem
+            }
+            
+            // Fruit size scales with screen, min 80px, max 300px
+            fruitSize = Math.round(Math.min(Math.max(minDimension * 0.18, 80), 300));
+        }
+        
+        function onResize(scaleManager, width, height) {
+            // Recalculate responsive sizes
+            calculateResponsiveSizes();
+            
+            // Update gravity based on new screen size
+            game.physics.arcade.gravity.y = 300;
+            
+            // Recreate UI elements
+            if (tipLabel) tipLabel.destroy();
+            if (scoreLabel) scoreLabel.destroy();
+            createText();
+            
+            // Recreate start screen if game hasn't started
+            if (!gameStarted && startScreenGroup) {
+                startScreenGroup.destroy();
+                createStartScreen();
+            } else if (gameStarted) {
+                tipLabel.visible = true;
+                scoreLabel.visible = true;
+                updateScore(score);
+            }
+        }
 
+        function loadLeaderboard() {
+            var stored = localStorage.getItem("leaderboard");
+            if (stored) {
+                leaderboard = JSON.parse(stored);
+            } else {
+                leaderboard = [];
+            }
+            // Keep only top 5 scores
+            leaderboard = leaderboard.sort((a, b) => b - a).slice(0, 5);
+        }
+
+        function saveToLeaderboard(newScore) {
+            leaderboard.push(newScore);
+            leaderboard = leaderboard.sort((a, b) => b - a).slice(0, 5);
+            localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+        }
+
+        function createStartScreen() {
+            startScreenGroup = game.add.group();
+            
+            // Calculate responsive sizes
+            var titleFontSize = Math.round(fontSize * 1.8);
+            var leaderboardFontSize = fontSize;
+            var entryFontSize = Math.round(fontSize * 0.85);
+            var instructionFontSize = Math.round(fontSize * 0.7);
+            
+            // Responsive spacing
+            var titleY = game.world.height * 0.1;
+            var leaderboardTitleY = game.world.height * 0.22;
+            var leaderboardStartY = game.world.height * 0.30;
+            var leaderboardSpacing = Math.max(fontSize * 1.3, 30);
+            var buttonY = game.world.height * 0.72;
+            var instructionY = game.world.height * 0.88;
+
+            // Title
+            var titleStyle = { font: 'bold ' + titleFontSize + 'px Arial', fill: '#ff6347', align: 'center' };
+            var title = game.add.text(game.world.centerX, titleY, '🍉 FRUIT NINJA 🍉', titleStyle);
+            title.anchor.setTo(0.5, 0.5);
+            startScreenGroup.add(title);
+
+            // Leaderboard title
+            var leaderboardTitleStyle = { font: 'bold ' + leaderboardFontSize + 'px Arial', fill: '#9adcfa', align: 'center' };
+            var leaderboardTitle = game.add.text(game.world.centerX, leaderboardTitleY, '🏆 LEADERBOARD 🏆', leaderboardTitleStyle);
+            leaderboardTitle.anchor.setTo(0.5, 0.5);
+            startScreenGroup.add(leaderboardTitle);
+
+            // Leaderboard entries
+            var entryStyle = { font: entryFontSize + 'px Arial', fill: '#ffffff', align: 'center' };
+
+            if (leaderboard.length === 0) {
+                var noScores = game.add.text(game.world.centerX, leaderboardStartY, 'Nessun punteggio ancora!', entryStyle);
+                noScores.anchor.setTo(0.5, 0.5);
+                startScreenGroup.add(noScores);
+            } else {
+                for (var i = 0; i < leaderboard.length; i++) {
+                    var medal = i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : '  '));
+                    var entryText = medal + ' ' + (i + 1) + '. ' + leaderboard[i] + ' punti';
+                    var entry = game.add.text(game.world.centerX, leaderboardStartY + (i * leaderboardSpacing), entryText, entryStyle);
+                    entry.anchor.setTo(0.5, 0.5);
+                    startScreenGroup.add(entry);
+                }
+            }
+
+            // Start button - responsive sizing
+            var minButtonWidth = 150;
+            var maxButtonWidth = 400;
+            var buttonWidth = Math.min(Math.max(game.world.width * 0.35, minButtonWidth), maxButtonWidth);
+            var buttonHeight = Math.max(fontSize * 2.2, 50);
+            var buttonRadius = Math.round(buttonHeight * 0.2);
+
+            var buttonGraphics = game.add.graphics(0, 0);
+            buttonGraphics.beginFill(0x4CAF50);
+            buttonGraphics.drawRoundedRect(
+                game.world.centerX - buttonWidth / 2,
+                buttonY - buttonHeight / 2,
+                buttonWidth,
+                buttonHeight,
+                buttonRadius
+            );
+            buttonGraphics.endFill();
+            startScreenGroup.add(buttonGraphics);
+
+            var buttonTextStyle = { font: 'bold ' + fontSize + 'px Arial', fill: '#ffffff', align: 'center' };
+            var buttonText = game.add.text(game.world.centerX, buttonY, '▶ GIOCA', buttonTextStyle);
+            buttonText.anchor.setTo(0.5, 0.5);
+            startScreenGroup.add(buttonText);
+
+            // Make button interactive with larger touch area for mobile
+            var touchPadding = 20;
+            var hitArea = game.add.sprite(
+                game.world.centerX - buttonWidth / 2 - touchPadding,
+                buttonY - buttonHeight / 2 - touchPadding
+            );
+            hitArea.width = buttonWidth + touchPadding * 2;
+            hitArea.height = buttonHeight + touchPadding * 2;
+            hitArea.inputEnabled = true;
+            hitArea.input.useHandCursor = true;
+            hitArea.events.onInputDown.add(startGame, this);
+            startScreenGroup.add(hitArea);
+
+            // Instructions
+            var instructionStyle = { font: instructionFontSize + 'px Arial', fill: '#cccccc', align: 'center' };
+            var instructions = game.add.text(game.world.centerX, instructionY, 'Taglia la frutta, evita le bombe!', instructionStyle);
+            instructions.anchor.setTo(0.5, 0.5);
+            startScreenGroup.add(instructions);
+
+            // Hide game UI initially
+            tipLabel.visible = false;
+            scoreLabel.visible = false;
+        }
+
+        function startGame() {
+            gameStarted = true;
+            startScreenGroup.destroy();
+            tipLabel.visible = true;
+            scoreLabel.visible = true;
+            score = 0;
+            updateScore(0);
             throwObject();
         }
 
         function createText() {
-            tipLabel = game.add.text(10, 10, 'Slice fruits, avoid bombs!');
+            // Responsive padding based on screen size
+            var padding = Math.max(Math.round(game.world.width * 0.02), 10);
+            var lineSpacing = Math.round(fontSize * 1.5);
+            
+            tipLabel = game.add.text(padding, padding, 'Taglia la frutta, evita le bombe!');
             tipLabel.fill = 'white';
             tipLabel.fontSize = fontSize;
 
-            scoreLabel = game.add.text(10, 70);
+            scoreLabel = game.add.text(padding, padding + lineSpacing);
             scoreLabel.fontSize = fontSize;
             updateScore(0);
         }
@@ -111,6 +311,8 @@
         }
 
         function throwObject() {
+            if (!gameStarted) return;
+            
             if (game.time.now > nextFire && good_objects.countDead() > 0 && bad_objects.countDead() > 0) {
                 nextFire = game.time.now + fireRate;
                 throwGoodObject();
@@ -174,14 +376,27 @@
         }
 
         function update() {
+            if (!gameStarted) return;
+            
             throwObject();
 
-            let input = getInput();
-            points.push({
-                x: input.x,
-                y: input.y
-            });
-            points = points.splice(points.length - 10, points.length);
+            // Use pointer1 for both mouse and touch
+            var pointer = game.input.pointer1.isDown ? game.input.pointer1 : 
+                          (game.input.mousePointer.isDown ? game.input.mousePointer : null);
+            
+            // Only track slashing when mouse/touch is down
+            if (pointer && pointer.isDown) {
+                points.push({
+                    x: pointer.x,
+                    y: pointer.y
+                });
+                points = points.splice(points.length - 10, points.length);
+            } else {
+                // Clear points when not pressing
+                points = [];
+                slashes.clear();
+                return;
+            }
 
             if (points.length < 1 || points[0].x == 0) {
                 return;
@@ -221,7 +436,9 @@
                 contactPoint.x = input.x;
                 contactPoint.y = input.y;
                 var distance = Phaser.Point.distance(contactPoint, new Phaser.Point(fruit.x, fruit.y));
-                if (Phaser.Point.distance(contactPoint, new Phaser.Point(fruit.x, fruit.y)) > 110) {
+                // Responsive hit detection based on fruit size
+                var hitThreshold = fruitSize * 0.6;
+                if (Phaser.Point.distance(contactPoint, new Phaser.Point(fruit.x, fruit.y)) > hitThreshold) {
                     return;
                 }
 
@@ -237,11 +454,29 @@
             var highscore = Math.max(score, localStorage.getItem("highscore"));
             localStorage.setItem("highscore", highscore);
 
-            good_objects.forEachExists(killFruit);
-            bad_objects.forEachExists(killFruit);
+            // Save score to leaderboard
+            if (score > 0) {
+                saveToLeaderboard(score);
+            }
+
+            good_objects.forEachExists(killFruitSilent);
+            bad_objects.forEachExists(killFruitSilent);
 
             score = 0;
-            updateScoreLabel(`Game Over!\nHigh Score: ${highscore}`, 'tomato');
+            points = [];
+            slashes.clear();
+            
+            // Return to start screen
+            gameStarted = false;
+            loadLeaderboard();
+            createStartScreen();
+        }
+
+        function killFruitSilent(fruit) {
+            emitter.x = fruit.x;
+            emitter.y = fruit.y;
+            emitter.start(true, 2000, null, 4);
+            fruit.kill();
         }
 
         function killFruit(fruit) {
