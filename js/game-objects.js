@@ -1,0 +1,226 @@
+/**
+ * Gestione degli oggetti di gioco (frutti e bombe)
+ * Handles: creazione gruppi, lancio oggetti, fisica
+ */
+
+const GameObjects = (function() {
+    // Private variables
+    let game = null;
+    let goodObjects = null;
+    let badObjects = null;
+    let emitter = null;
+    let nextFire = 0;
+    let fruitSize = 100;
+    
+    const config = window.GameConfig;
+    
+    /**
+     * Inizializza il modulo con il riferimento al game Phaser
+     * @param {Object} phaserGame - Istanza del gioco Phaser
+     */
+    function init(phaserGame) {
+        game = phaserGame;
+    }
+    
+    /**
+     * Crea un gruppo di sprite singoli
+     * @param {Array} sprites - Array di nomi sprite
+     * @returns {Object} Gruppo Phaser
+     */
+    function createGroup(sprites) {
+        const group = game.add.group();
+        group.enableBody = true;
+        group.physicsBodyType = Phaser.Physics.ARCADE;
+        sprites.forEach(sprite => {
+            group.add(game.make.sprite(30000, 30000, sprite));
+        });
+        group.setAll('checkWorldBounds', true);
+        group.setAll('outOfBoundsKill', true);
+        return group;
+    }
+    
+    /**
+     * Crea un gruppo con multipli dello stesso sprite
+     * @param {number} numItems - Numero di elementi
+     * @param {string} sprite - Nome dello sprite
+     * @returns {Object} Gruppo Phaser
+     */
+    function createGroupMultiple(numItems, sprite) {
+        const group = game.add.group();
+        group.enableBody = true;
+        group.physicsBodyType = Phaser.Physics.ARCADE;
+        group.createMultiple(numItems, sprite);
+        group.setAll('checkWorldBounds', true);
+        group.setAll('outOfBoundsKill', true);
+        return group;
+    }
+    
+    /**
+     * Crea tutti i gruppi di oggetti e l'emitter
+     */
+    function createAllGroups() {
+        goodObjects = createGroup(config.fruits);
+        badObjects = createGroupMultiple(4, 'bomb');
+        
+        emitter = game.add.emitter(0, 0, 300);
+        emitter.makeParticles('explosion');
+        emitter.gravity = config.particleGravity;
+        emitter.setScale(config.particleScaleMin, config.particleScaleMax, config.particleScaleMin, config.particleScaleMax);
+        emitter.setYSpeed(-config.particleSpeedY, config.particleSpeedY);
+    }
+    
+    /**
+     * Imposta la dimensione dei frutti
+     * @param {number} size - Dimensione in pixel
+     */
+    function setFruitSize(size) {
+        fruitSize = size;
+    }
+    
+    /**
+     * Ottiene un elemento morto random da un gruppo
+     * @param {Object} group - Gruppo Phaser
+     * @returns {Object} Sprite morto
+     */
+    function getRandomDead(group) {
+        const deadChildren = group.children.filter(e => !e.alive);
+        let randIndex = Math.floor(Math.random() * deadChildren.length);
+        randIndex = Math.min(randIndex, deadChildren.length - 1);
+        return deadChildren[randIndex];
+    }
+    
+    /**
+     * Genera accelerazione angolare random
+     * @returns {number} Valore tra -50 e 50
+     */
+    function getRandomAngularAcceleration() {
+        return ((Math.random() * 2) - 1) * 50;
+    }
+    
+    /**
+     * Genera angolo di partenza random
+     * @returns {number} Valore tra -10 e 10
+     */
+    function getRandomStartingAngle() {
+        return ((Math.random() * 2) - 1) * 10;
+    }
+    
+    /**
+     * Genera posizione X random (60% centrale dello schermo)
+     * @returns {number} Posizione X
+     */
+    function getRandomX() {
+        return (((Math.random() * game.world.width) - game.world.centerX) * 0.6) + game.world.centerX;
+    }
+    
+    /**
+     * Genera velocità random
+     * @returns {number} Velocità (minimo 500)
+     */
+    function getRandomSpeed() {
+        return Math.max(Math.random() * game.world.height, 500);
+    }
+    
+    /**
+     * Lancia un oggetto buono (frutto/spilla)
+     */
+    function throwGoodObject() {
+        const obj = getRandomDead(goodObjects);
+        obj.reset(getRandomX(), game.world.height);
+        obj.anchor.setTo(0.5, 0.5);
+        obj.angle = getRandomStartingAngle();
+        obj.height = obj.width = fruitSize;
+        obj.body.angularAcceleration = getRandomAngularAcceleration();
+        game.physics.arcade.moveToXY(obj, game.world.centerX, game.world.centerY, getRandomSpeed());
+        
+        // Attach 3D model
+        if (window.ThreeManager.isModelLoaded()) {
+            window.ThreeManager.attachToSprite(obj, fruitSize);
+        }
+    }
+    
+    /**
+     * Lancia un oggetto cattivo (bomba)
+     */
+    function throwBadObject() {
+        const obj = badObjects.getFirstDead();
+        obj.reset(getRandomX(), game.world.height);
+        obj.anchor.setTo(0.5, 0.5);
+        obj.angle = getRandomStartingAngle();
+        obj.height = obj.width = fruitSize;
+        obj.body.angularAcceleration = getRandomAngularAcceleration();
+        game.physics.arcade.moveToXY(obj, game.world.centerX, game.world.centerY, getRandomSpeed());
+    }
+    
+    /**
+     * Gestisce il lancio degli oggetti (chiamato ogni frame)
+     * @returns {boolean} True se è stato lanciato qualcosa
+     */
+    function tryThrowObjects() {
+        if (game.time.now > nextFire && goodObjects.countDead() > 0 && badObjects.countDead() > 0) {
+            nextFire = game.time.now + config.fireRate;
+            throwGoodObject();
+            if (Math.random() > 0.5) {
+                throwBadObject();
+            }
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Uccide un frutto con effetto particelle
+     * @param {Object} fruit - Sprite del frutto
+     * @param {boolean} silent - Se true, non aggiorna il punteggio
+     */
+    function killFruit(fruit, silent = false) {
+        emitter.x = fruit.x;
+        emitter.y = fruit.y;
+        emitter.start(true, config.particleLifespan, null, config.particleCount);
+        fruit.kill();
+        
+        // Hide 3D model if this was the 3D fruit
+        if (fruit === window.ThreeManager.getCurrentFruit()) {
+            window.ThreeManager.hideModel();
+        }
+    }
+    
+    /**
+     * Uccide tutti gli oggetti esistenti
+     */
+    function killAllObjects() {
+        goodObjects.forEachExists(fruit => killFruit(fruit, true));
+        badObjects.forEachExists(fruit => killFruit(fruit, true));
+    }
+    
+    /**
+     * Getters per i gruppi
+     */
+    function getGoodObjects() {
+        return goodObjects;
+    }
+    
+    function getBadObjects() {
+        return badObjects;
+    }
+    
+    function getFruitSize() {
+        return fruitSize;
+    }
+    
+    // Public API
+    return {
+        init,
+        createAllGroups,
+        setFruitSize,
+        tryThrowObjects,
+        killFruit,
+        killAllObjects,
+        getGoodObjects,
+        getBadObjects,
+        getFruitSize
+    };
+})();
+
+// Export per uso globale
+window.GameObjects = GameObjects;

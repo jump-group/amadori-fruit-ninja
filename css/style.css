@@ -1,0 +1,30 @@
+/* ==============================================
+   Fruit Ninja - Stili principali
+   ============================================== */
+
+/* Reset e setup base */
+html,
+body {
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Container del gioco */
+#game {
+    width: 100vw;
+    height: 100vh;
+}
+
+/* Overlay Three.js per modelli 3D */
+#three-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 10;
+}
