@@ -32,7 +32,8 @@ const GameConfig = {
     assets: {
         apple: 'images/fruits/apple.png',
         bomb: 'images/bomb.png',
-        explosion: 'images/explosion.png'
+        explosion: 'images/explosion.png',
+        start: 'images/start.png'
     }
 };
 

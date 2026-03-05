@@ -28,7 +28,7 @@
             create: create,
             update: update,
             render: render
-        });
+        }, true); // transparent canvas
     }
     
     /**
@@ -39,6 +39,7 @@
         game.load.image('apple', assets.apple);
         game.load.image('bomb', assets.bomb);
         game.load.image('explosion', assets.explosion);
+        game.load.image('start', assets.start);
     }
     
     /**
@@ -57,7 +58,6 @@
         // Setup physics
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.physics.arcade.gravity.y = GameConfig.gravity;
-        game.stage.backgroundColor = GameConfig.backgroundColor;
 
         // Initialize modules
         GameObjects.init(game);
@@ -125,12 +125,38 @@
      * Avvia il gioco
      */
     function startGame() {
-        gameStarted = true;
         UI.destroyStartScreen();
-        UI.showGameLabels();
-        score = 0;
-        UI.updateScore(0);
-        GameObjects.tryThrowObjects();
+        
+        // Show start image with animation
+        const startImage = game.add.sprite(game.world.centerX, game.world.centerY, 'start');
+        startImage.anchor.setTo(0.5, 0.5);
+        
+        // Scale to fit screen (max 25% of screen width)
+        const maxWidth = game.world.width * 0.25;
+        const targetScale = maxWidth / startImage.width;
+        
+        // Start with scale 0 and fade in
+        startImage.alpha = 0;
+        startImage.scale.setTo(0, 0);
+        
+        // Animate: scale up and fade in
+        game.add.tween(startImage.scale).to({ x: targetScale, y: targetScale }, 300, Phaser.Easing.Back.Out, true);
+        game.add.tween(startImage).to({ alpha: 1 }, 300, Phaser.Easing.Linear.None, true);
+        
+        // After 1 second, fade out and start the game
+        game.time.events.add(1000, function() {
+            game.add.tween(startImage).to({ alpha: 0 }, 200, Phaser.Easing.Linear.None, true)
+                .onComplete.add(function() {
+                    startImage.destroy();
+                    
+                    // Actually start the game
+                    gameStarted = true;
+                    UI.showGameLabels();
+                    score = 0;
+                    UI.updateScore(0);
+                    GameObjects.tryThrowObjects();
+                });
+        });
     }
     
     /**

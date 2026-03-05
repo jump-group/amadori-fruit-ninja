@@ -19,6 +19,57 @@ body {
 #game {
     width: 100vw;
     height: 100vh;
+    background-color: #005832;
+    background-image: url('../images/background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.game-stripes {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    z-index: 50;
+    pointer-events: none;
+}
+
+/* ==============================================
+   Score Container
+   ============================================== */
+
+#score-container {
+    position: fixed;
+    top: 3.5%;
+    left: 3.5%;
+    width: clamp(120px, 8.5vw, 329px);
+    height: clamp(66px, 4.7vw, 182px);
+    background-color: #FFFFFF;
+    border-radius: 100px;
+    padding: 2px 16px 6px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 60;
+    pointer-events: none;
+    box-sizing: border-box;
+}
+
+#score-container.hidden {
+    display: none;
+}
+
+#score-value {
+    font-family: 'Barlow', sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    font-size: clamp(32px, 3.3vw, 128px);
+    line-height: 100%;
+    letter-spacing: 0;
+    text-align: center;
+    color: #BD1923;
 }
 
 /* ==============================================

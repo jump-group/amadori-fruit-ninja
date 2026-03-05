@@ -6,14 +6,14 @@
 const UI = (function() {
     // Private variables
     let game = null;
-    let tipLabel = null;
-    let scoreLabel = null;
     let fontSize = 24;
     let onStartCallback = null;
     
     // DOM elements
     let splashScreen = null;
     let startButton = null;
+    let scoreContainer = null;
+    let scoreValue = null;
     
     /**
      * Inizializza il modulo con il riferimento al game Phaser
@@ -25,6 +25,8 @@ const UI = (function() {
         // Get DOM references
         splashScreen = document.getElementById('splash-screen');
         startButton = document.getElementById('start-button');
+        scoreContainer = document.getElementById('score-container');
+        scoreValue = document.getElementById('score-value');
         
         // Setup start button listener
         if (startButton) {
@@ -42,43 +44,31 @@ const UI = (function() {
     }
     
     /**
-     * Crea le label di gioco (tip e score)
+     * Crea le label di gioco (non più usata)
      */
     function createGameLabels() {
-        const padding = Math.max(Math.round(game.world.width * 0.02), 10);
-        const lineSpacing = Math.round(fontSize * 1.5);
-        
-        tipLabel = game.add.text(padding, padding, 'Affetta le monete, evita la dinamite!');
-        tipLabel.fill = 'white';
-        tipLabel.fontSize = fontSize;
-
-        scoreLabel = game.add.text(padding, padding + lineSpacing);
-        scoreLabel.fontSize = fontSize;
+        // Score ora gestito via HTML
     }
     
     /**
      * Distrugge e ricrea le label (per resize)
      */
     function recreateLabels() {
-        if (tipLabel) tipLabel.destroy();
-        if (scoreLabel) scoreLabel.destroy();
-        createGameLabels();
+        // Score ora gestito via HTML
     }
     
     /**
      * Mostra le label di gioco
      */
     function showGameLabels() {
-        if (tipLabel) tipLabel.visible = true;
-        if (scoreLabel) scoreLabel.visible = true;
+        if (scoreContainer) scoreContainer.classList.remove('hidden');
     }
     
     /**
      * Nasconde le label di gioco
      */
     function hideGameLabels() {
-        if (tipLabel) tipLabel.visible = false;
-        if (scoreLabel) scoreLabel.visible = false;
+        if (scoreContainer) scoreContainer.classList.add('hidden');
     }
     
     /**
@@ -86,9 +76,8 @@ const UI = (function() {
      * @param {number} score - Punteggio da visualizzare
      */
     function updateScore(score) {
-        if (scoreLabel) {
-            scoreLabel.text = `Score: ${score}`;
-            scoreLabel.fill = '#9adcfa';
+        if (scoreValue) {
+            scoreValue.textContent = score;
         }
     }
     
