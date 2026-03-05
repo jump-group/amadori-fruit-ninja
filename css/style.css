@@ -12,6 +12,7 @@ body {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
+    font-family: Arial, sans-serif;
 }
 
 /* Container del gioco */
@@ -20,11 +21,113 @@ body {
     height: 100vh;
 }
 
-/* Overlay Three.js per modelli 3D */
-#three-canvas {
-    position: absolute;
+/* ==============================================
+   Splash Screen
+   ============================================== */
+
+#splash-screen {
+    position: fixed;
     top: 0;
     left: 0;
-    pointer-events: none;
-    z-index: 10;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(180deg, #135B3C 0%, #022D1A 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    font-family: 'Barlow', sans-serif;
+}
+
+#splash-screen.hidden {
+    display: none;
+}
+
+.splash-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    padding: 2rem;
+    text-align: center;
+}
+
+.splash-logo {
+    width: min(250px, 30vw);
+    height: auto;
+    margin-bottom: 2rem;
+}
+
+.splash-title {
+    color: #FFFFFF;
+    font-family: 'Barlow', sans-serif;
+    font-style: normal;
+    font-weight: 700;
+    font-size: clamp(2rem, 3.85vw, 148px);
+    line-height: 1.2;
+    text-align: center;
+    margin: 0 0 1rem 0;
+}
+
+.splash-subtitle {
+    color: #FFFFFF;
+    font-family: 'Barlow', sans-serif;
+    font-style: normal;
+    font-weight: 600;
+    font-size: clamp(1.2rem, 2.5vw, 96px);
+    line-height: 1.2;
+    text-align: center;
+    margin: 0 0 1.5rem 0;
+}
+
+.splash-description {
+    color: #FFFFFF;
+    font-family: 'Barlow', sans-serif;
+    font-style: normal;
+    font-weight: 500;
+    font-size: clamp(1rem, 1.67vw, 64px);
+    line-height: 1.2;
+    text-align: center;
+    margin: 0 0 2rem 0;
+}
+
+.splash-description .text-pink {
+    color: #F48399;
+}
+
+.splash-description .text-green {
+    color: #40A72D;
+}
+
+.splash-description .text-yellow {
+    color: #FFC511;
+}
+
+#start-button {
+    background-color: #ffffff;
+    color: #1B5E20;
+    border: none;
+    border-radius: 50px;
+    padding: 1rem 3rem;
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#start-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+}
+
+#start-button:active {
+    transform: scale(0.98);
+}
+
+.splash-stripes {
+    width: 100%;
+    height: auto;
+    display: block;
 }
