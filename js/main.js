@@ -45,9 +45,6 @@
      * Creazione del gioco
      */
     function create() {
-        // Initialize Three.js for 3D model
-        ThreeManager.init();
-        
         // Enable responsive scaling
         game.scale.scaleMode = Phaser.ScaleManager.RESIZE;
         game.scale.pageAlignHorizontally = true;
@@ -143,23 +140,12 @@
      * Game loop principale
      */
     function update() {
-        // Always update Three.js
-        ThreeManager.update();
-        
         if (!gameStarted) {
             return;
         }
         
         // Throw objects
         GameObjects.tryThrowObjects();
-        
-        // Update 3D model position
-        const currentFruit = ThreeManager.getCurrentFruit();
-        if (currentFruit && currentFruit.alive) {
-            ThreeManager.updatePosition(currentFruit);
-        } else if (currentFruit && !currentFruit.alive) {
-            ThreeManager.hideModel();
-        }
         
         // Handle input
         handleSlashInput();

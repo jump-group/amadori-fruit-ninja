@@ -122,7 +122,7 @@ const GameObjects = (function() {
     }
     
     /**
-     * Lancia un oggetto buono (frutto/spilla)
+     * Lancia un oggetto buono (frutto)
      */
     function throwGoodObject() {
         const obj = getRandomDead(goodObjects);
@@ -132,11 +132,6 @@ const GameObjects = (function() {
         obj.height = obj.width = fruitSize;
         obj.body.angularAcceleration = getRandomAngularAcceleration();
         game.physics.arcade.moveToXY(obj, game.world.centerX, game.world.centerY, getRandomSpeed());
-        
-        // Attach 3D model
-        if (window.ThreeManager.isModelLoaded()) {
-            window.ThreeManager.attachToSprite(obj, fruitSize);
-        }
     }
     
     /**
@@ -178,11 +173,6 @@ const GameObjects = (function() {
         emitter.y = fruit.y;
         emitter.start(true, config.particleLifespan, null, config.particleCount);
         fruit.kill();
-        
-        // Hide 3D model if this was the 3D fruit
-        if (fruit === window.ThreeManager.getCurrentFruit()) {
-            window.ThreeManager.hideModel();
-        }
     }
     
     /**
