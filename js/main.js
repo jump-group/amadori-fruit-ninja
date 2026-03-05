@@ -107,11 +107,8 @@
         // Recreate UI elements
         UI.recreateLabels();
         
-        // Recreate start screen if game hasn't started
-        if (!gameStarted && UI.hasStartScreen()) {
-            UI.destroyStartScreen();
-            showStartScreen();
-        } else if (gameStarted) {
+        // Update labels visibility based on game state
+        if (gameStarted) {
             UI.showGameLabels();
             UI.updateScore(score);
         }

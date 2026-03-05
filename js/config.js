@@ -32,20 +32,7 @@ const GameConfig = {
     assets: {
         apple: 'images/fruits/apple.png',
         bomb: 'images/bomb.png',
-        explosion: 'images/explosion.png',
-        model3D: 'assets/models/spilla_amadori_1.glb'
-    },
-    
-    // Three.js settings
-    three: {
-        cameraFOV: 75,
-        cameraNear: 0.1,
-        cameraFar: 1000,
-        cameraZ: 5,
-        ambientLightIntensity: 0.6,
-        directionalLightIntensity: 0.8,
-        modelInitialScale: 0.5,
-        spinSpeed: 0.05
+        explosion: 'images/explosion.png'
     }
 };
 
