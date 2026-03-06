@@ -50,9 +50,12 @@
         game.load.image('game', assets.game);
         game.load.image('over', assets.over);
         
-        // Carica spritesheet per animazioni di slice
-        const sliceSheet = GameConfig.spritesheets.sliceExplosion;
-        game.load.spritesheet('sliceExplosion', sliceSheet.path, sliceSheet.frameWidth, sliceSheet.frameHeight, sliceSheet.frameCount);
+        // Carica spritesheets per animazioni di slice (uno per ogni elemento)
+        const sheets = GameConfig.spritesheets;
+        Object.keys(sheets).forEach(function(key) {
+            const s = sheets[key];
+            game.load.spritesheet(key + 'Slice', s.path, s.frameWidth, s.frameHeight, s.frameCount);
+        });
     }
     
     /**

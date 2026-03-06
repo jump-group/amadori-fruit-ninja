@@ -169,31 +169,29 @@ const GameObjects = (function() {
      * @param {boolean} silent - Se true, non aggiorna il punteggio
      */
     function killFruit(fruit, silent = false) {
-        // Solo animazione di esplosione (spritesheet dinamite)
-        playSliceAnimation(fruit.x, fruit.y);
+        var spriteKey = fruit.key || 'bomb';
+        playSliceAnimation(fruit.x, fruit.y, spriteKey);
         fruit.kill();
     }
     
     /**
-     * Riproduce l'animazione di esplosione/slice
+     * Riproduce l'animazione di slice usando lo spritesheet dell'elemento corrispondente
      * @param {number} x - Posizione X
      * @param {number} y - Posizione Y
+     * @param {string} elementKey - Chiave dell'elemento (bean, chicken, egg, pig, bomb)
      */
-    function playSliceAnimation(x, y) {
-        const explosion = game.add.sprite(x, y, 'sliceExplosion');
+    function playSliceAnimation(x, y, elementKey) {
+        var sheetKey = elementKey + 'Slice';
+        var explosion = game.add.sprite(x, y, sheetKey);
         explosion.anchor.setTo(0.5, 0.5);
         
-        // Scala l'animazione in base alla configurazione
-        const scale = config.sliceAnimation ? config.sliceAnimation.scale : 0.4;
+        var scale = config.sliceAnimation ? config.sliceAnimation.scale : 0.4;
         explosion.scale.setTo(scale, scale);
         
-        // Crea e riproduce l'animazione
-        const frameRate = config.sliceAnimation ? config.sliceAnimation.frameRate : 24;
-        const frameCount = config.spritesheets ? config.spritesheets.sliceExplosion.frameCount : 8;
+        var frameRate = config.sliceAnimation ? config.sliceAnimation.frameRate : 24;
         explosion.animations.add('explode', null, frameRate, false);
         explosion.animations.play('explode');
         
-        // Distrugge lo sprite quando l'animazione termina
         explosion.animations.currentAnim.onComplete.add(function() {
             explosion.destroy();
         });
