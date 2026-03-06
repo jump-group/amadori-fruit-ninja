@@ -36,10 +36,23 @@
      */
     function preload() {
         const assets = GameConfig.assets;
-        game.load.image('apple', assets.apple);
+        
+        // Carica elementi di gioco (buoni)
+        game.load.image('bean', assets.bean);
+        game.load.image('chicken', assets.chicken);
+        game.load.image('egg', assets.egg);
+        game.load.image('pig', assets.pig);
+        
+        // Carica bomba e altri asset
         game.load.image('bomb', assets.bomb);
         game.load.image('explosion', assets.explosion);
         game.load.image('start', assets.start);
+        game.load.image('game', assets.game);
+        game.load.image('over', assets.over);
+        
+        // Carica spritesheet per animazioni di slice
+        const sliceSheet = GameConfig.spritesheets.sliceExplosion;
+        game.load.spritesheet('sliceExplosion', sliceSheet.path, sliceSheet.frameWidth, sliceSheet.frameHeight, sliceSheet.frameCount);
     }
     
     /**
@@ -269,7 +282,7 @@
             if (isGood) {
                 onGoodObjectHit(fruit);
             } else {
-                onBadObjectHit();
+                onBadObjectHit(fruit);
             }
         }
     }
@@ -287,12 +300,16 @@
     
     /**
      * Gestisce il colpo su una bomba
+     * @param {Object} bomb - Lo sprite della bomba colpita
      */
-    function onBadObjectHit() {
+    function onBadObjectHit(bomb) {
+        // Ferma il gioco immediatamente
+        gameStarted = false;
+        
         // Save score before reset
         Leaderboard.saveScore(score);
         
-        // Kill all objects
+        // Kill all objects (con animazione esplosione sulla bomba)
         GameObjects.killAllObjects();
         
         // Reset game state
@@ -300,10 +317,59 @@
         points = [];
         slashes.clear();
         
-        // Return to start screen
-        gameStarted = false;
-        Leaderboard.load();
-        showStartScreen();
+        // Aspetta che l'animazione dell'esplosione finisca (circa 350ms per 8 frame a 24fps)
+        game.time.events.add(400, function() {
+            showGameOver();
+        });
+    }
+    
+    /**
+     * Mostra la schermata di Game Over
+     */
+    function showGameOver() {
+        // Crea il gruppo per Game Over
+        const gameOverGroup = game.add.group();
+        
+        // Posizione centrale verticale, leggermente sopra il centro
+        const centerY = game.world.centerY - 50;
+        
+        // Calcola la scala desiderata (max 30% della larghezza schermo per ciascuna immagine)
+        const maxWidth = game.world.width * 0.35;
+        
+        // Crea immagine "GAME"
+        const gameImage = game.add.sprite(game.world.centerX, centerY - 60, 'game');
+        gameImage.anchor.setTo(0.5, 0.5);
+        const gameScale = Math.min(maxWidth / gameImage.width, 1);
+        gameImage.alpha = 0;
+        gameImage.scale.setTo(0, 0);
+        gameOverGroup.add(gameImage);
+        
+        // Crea immagine "OVER"
+        const overImage = game.add.sprite(game.world.centerX, centerY + 100, 'over');
+        overImage.anchor.setTo(0.5, 0.5);
+        const overScale = Math.min(maxWidth / overImage.width, 1);
+        overImage.alpha = 0;
+        overImage.scale.setTo(0, 0);
+        gameOverGroup.add(overImage);
+        
+        // Anima "GAME" - scala e fade in
+        game.add.tween(gameImage.scale).to({ x: gameScale, y: gameScale }, 300, Phaser.Easing.Back.Out, true);
+        game.add.tween(gameImage).to({ alpha: 1 }, 300, Phaser.Easing.Linear.None, true);
+        
+        // Anima "OVER" - con leggero ritardo
+        game.add.tween(overImage.scale).to({ x: overScale, y: overScale }, 300, Phaser.Easing.Back.Out, true, 150);
+        game.add.tween(overImage).to({ alpha: 1 }, 300, Phaser.Easing.Linear.None, true, 150);
+        
+        // Dopo 2 secondi, fade out e torna alla splash screen
+        game.time.events.add(2500, function() {
+            game.add.tween(gameImage).to({ alpha: 0 }, 300, Phaser.Easing.Linear.None, true);
+            game.add.tween(overImage).to({ alpha: 0 }, 300, Phaser.Easing.Linear.None, true)
+                .onComplete.add(function() {
+                    gameOverGroup.destroy(true);
+                    Leaderboard.load();
+                    showStartScreen();
+                });
+        });
     }
     
     /**

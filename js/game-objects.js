@@ -164,15 +164,39 @@ const GameObjects = (function() {
     }
     
     /**
-     * Uccide un frutto con effetto particelle
+     * Uccide un frutto con effetto particelle e animazione esplosione
      * @param {Object} fruit - Sprite del frutto
      * @param {boolean} silent - Se true, non aggiorna il punteggio
      */
     function killFruit(fruit, silent = false) {
-        emitter.x = fruit.x;
-        emitter.y = fruit.y;
-        emitter.start(true, config.particleLifespan, null, config.particleCount);
+        // Solo animazione di esplosione (spritesheet dinamite)
+        playSliceAnimation(fruit.x, fruit.y);
         fruit.kill();
+    }
+    
+    /**
+     * Riproduce l'animazione di esplosione/slice
+     * @param {number} x - Posizione X
+     * @param {number} y - Posizione Y
+     */
+    function playSliceAnimation(x, y) {
+        const explosion = game.add.sprite(x, y, 'sliceExplosion');
+        explosion.anchor.setTo(0.5, 0.5);
+        
+        // Scala l'animazione in base alla configurazione
+        const scale = config.sliceAnimation ? config.sliceAnimation.scale : 0.4;
+        explosion.scale.setTo(scale, scale);
+        
+        // Crea e riproduce l'animazione
+        const frameRate = config.sliceAnimation ? config.sliceAnimation.frameRate : 24;
+        const frameCount = config.spritesheets ? config.spritesheets.sliceExplosion.frameCount : 8;
+        explosion.animations.add('explode', null, frameRate, false);
+        explosion.animations.play('explode');
+        
+        // Distrugge lo sprite quando l'animazione termina
+        explosion.animations.currentAnim.onComplete.add(function() {
+            explosion.destroy();
+        });
     }
     
     /**
