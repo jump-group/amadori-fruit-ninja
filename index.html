@@ -47,6 +47,25 @@
     <div id="score-container" class="hidden">
         <span id="score-value">0</span>
     </div>
+
+    <!-- Game Over Popup -->
+    <div id="game-over-popup" class="game-over-popup hidden">
+        <div class="game-over-popup-box">
+            <div class="game-over-header">
+                <h2 class="game-over-title">Punteggio finale</h2>
+                <p class="game-over-score" id="game-over-score-value">0</p>
+            </div>
+            <div class="game-over-form">
+                <label class="game-over-label" for="game-over-nickname">Inserisci Nickname</label>
+                <input type="text" id="game-over-nickname" class="game-over-input" placeholder="Inserisci nickname" maxlength="20">
+            </div>
+            <div class="game-over-buttons">
+                <button type="button" id="game-over-leaderboard-btn" class="game-over-btn game-over-btn-outline">Vedi la classifica</button>
+                <button type="button" id="game-over-play-again-btn" class="game-over-btn game-over-btn-primary">Gioca ancora</button>
+            </div>
+        </div>
+    </div>
+
     <img src="images/decorative-stripes.png" alt="" class="game-stripes">
 
     <!-- Game Modules -->

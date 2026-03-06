@@ -14,6 +14,11 @@ const UI = (function() {
     let startButton = null;
     let scoreContainer = null;
     let scoreValue = null;
+    let gameOverPopup = null;
+    let gameOverScoreEl = null;
+    let gameOverNicknameInput = null;
+    let gameOverPlayAgainBtn = null;
+    let onPlayAgainCallback = null;
     
     /**
      * Inizializza il modulo con il riferimento al game Phaser
@@ -27,6 +32,20 @@ const UI = (function() {
         startButton = document.getElementById('start-button');
         scoreContainer = document.getElementById('score-container');
         scoreValue = document.getElementById('score-value');
+        gameOverPopup = document.getElementById('game-over-popup');
+        gameOverScoreEl = document.getElementById('game-over-score-value');
+        gameOverNicknameInput = document.getElementById('game-over-nickname');
+        gameOverPlayAgainBtn = document.getElementById('game-over-play-again-btn');
+        
+        if (gameOverPlayAgainBtn) {
+            gameOverPlayAgainBtn.addEventListener('click', handlePlayAgainClick);
+            gameOverPlayAgainBtn.addEventListener('touchend', handlePlayAgainClick);
+        }
+
+        if (gameOverPopup) {
+            gameOverPopup.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+            gameOverPopup.addEventListener('touchstart', function(e) { e.stopPropagation(); });
+        }
         
         // Setup start button listener
         if (startButton) {
@@ -99,6 +118,43 @@ const UI = (function() {
     }
     
     /**
+     * Mostra il popup Game Over con il punteggio finale
+     * @param {number} finalScore - Punteggio da mostrare
+     * @param {Function} onPlayAgain - Callback quando si preme "Gioca ancora"
+     */
+    function showGameOverPopup(finalScore, onPlayAgain) {
+        onPlayAgainCallback = onPlayAgain;
+        if (gameOverScoreEl) gameOverScoreEl.textContent = finalScore;
+        if (gameOverNicknameInput) gameOverNicknameInput.value = '';
+        if (gameOverPopup) {
+            gameOverPopup.classList.remove('hidden');
+            gameOverPopup.style.animation = 'none';
+            gameOverPopup.offsetHeight; // force reflow to restart animation
+            gameOverPopup.style.animation = '';
+        }
+    }
+    
+    /**
+     * Nasconde il popup Game Over
+     */
+    function hideGameOverPopup() {
+        if (gameOverPopup) gameOverPopup.classList.add('hidden');
+    }
+    
+    /**
+     * Gestisce il click su "Gioca ancora"
+     */
+    function handlePlayAgainClick(e) {
+        if (e) {
+            e.preventDefault();
+        }
+        hideGameOverPopup();
+        if (onPlayAgainCallback) {
+            onPlayAgainCallback();
+        }
+    }
+    
+    /**
      * Gestisce il click sul pulsante start
      */
     function handleStartClick(e) {
@@ -138,7 +194,9 @@ const UI = (function() {
         updateScore,
         createStartScreen,
         destroyStartScreen,
-        hasStartScreen
+        hasStartScreen,
+        showGameOverPopup,
+        hideGameOverPopup
     };
 })();
 
