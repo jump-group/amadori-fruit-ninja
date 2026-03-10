@@ -9,11 +9,19 @@ const GameConfig = {
     
     // Fisica e timing
     gravity: 300,
-    fireRate: 1400,
+    gameDuration: 60,
+    
+    // Livelli di difficoltà (ogni 20 secondi)
+    difficulty: [
+        { fireRate: 1400, bombChance: 0.3, speedMultiplier: 1.0 },
+        { fireRate: 1100, bombChance: 0.5, speedMultiplier: 1.15 },
+        { fireRate: 850,  bombChance: 0.65, speedMultiplier: 1.3 }
+    ],
     
     // Punteggio
-    scoreToWin: 10,
     maxLeaderboardEntries: 5,
+    bombPenalty: 10,
+    comboMinHits: 3,
     
     // Colori
     backgroundColor: '#0d2622',
