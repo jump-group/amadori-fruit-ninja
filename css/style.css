@@ -75,6 +75,93 @@ body {
 }
 
 /* ==============================================
+   Timer Container
+   ============================================== */
+
+#timer-container {
+    position: fixed;
+    top: 3.5%;
+    right: 3.5%;
+    width: clamp(120px, 8.5vw, 329px);
+    height: clamp(66px, 4.7vw, 182px);
+    background-color: #FFFFFF;
+    border-radius: 100px;
+    padding: 2px 16px 6px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 60;
+    pointer-events: none;
+    box-sizing: border-box;
+}
+
+#timer-container.hidden {
+    display: none;
+}
+
+#timer-value {
+    font-family: 'Barlow', sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    font-size: clamp(32px, 3.3vw, 128px);
+    line-height: 100%;
+    letter-spacing: 0;
+    text-align: center;
+    color: #005832;
+}
+
+#timer-container.timer-warning #timer-value {
+    color: #BD1923;
+}
+
+/* ==============================================
+   Combo Popup
+   ============================================== */
+
+.combo-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 70;
+    pointer-events: none;
+    font-family: 'Barlow', sans-serif;
+    font-weight: 800;
+    font-style: italic;
+    font-size: clamp(36px, 5vw, 80px);
+    color: #FFFFFF;
+    text-shadow: 0 3px 12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(64, 167, 45, 0.6);
+    opacity: 0;
+    transition: none;
+}
+
+.combo-popup.hidden {
+    display: none;
+}
+
+@keyframes comboAppear {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    40% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    80% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1) translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8) translateY(-30px);
+    }
+}
+
+/* ==============================================
    Splash Screen
    ============================================== */
 

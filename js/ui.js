@@ -14,6 +14,10 @@ const UI = (function() {
     let startButton = null;
     let scoreContainer = null;
     let scoreValue = null;
+    let timerContainer = null;
+    let timerValue = null;
+    let comboPopup = null;
+    let comboTimeout = null;
     let gameOverPopup = null;
     let gameOverScoreEl = null;
     let gameOverNicknameInput = null;
@@ -32,6 +36,9 @@ const UI = (function() {
         startButton = document.getElementById('start-button');
         scoreContainer = document.getElementById('score-container');
         scoreValue = document.getElementById('score-value');
+        timerContainer = document.getElementById('timer-container');
+        timerValue = document.getElementById('timer-value');
+        comboPopup = document.getElementById('combo-popup');
         gameOverPopup = document.getElementById('game-over-popup');
         gameOverScoreEl = document.getElementById('game-over-score-value');
         gameOverNicknameInput = document.getElementById('game-over-nickname');
@@ -81,6 +88,7 @@ const UI = (function() {
      */
     function showGameLabels() {
         if (scoreContainer) scoreContainer.classList.remove('hidden');
+        if (timerContainer) timerContainer.classList.remove('hidden');
     }
     
     /**
@@ -88,6 +96,8 @@ const UI = (function() {
      */
     function hideGameLabels() {
         if (scoreContainer) scoreContainer.classList.add('hidden');
+        if (timerContainer) timerContainer.classList.add('hidden');
+        hideCombo();
     }
     
     /**
@@ -183,6 +193,49 @@ const UI = (function() {
         return splashScreen && !splashScreen.classList.contains('hidden');
     }
     
+    /**
+     * Aggiorna il timer visualizzato
+     * @param {number} seconds - Secondi rimanenti
+     */
+    function updateTimer(seconds) {
+        if (!timerValue) return;
+        var m = Math.floor(seconds / 60);
+        var s = seconds % 60;
+        timerValue.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+
+        if (timerContainer) {
+            if (seconds <= 10) {
+                timerContainer.classList.add('timer-warning');
+            } else {
+                timerContainer.classList.remove('timer-warning');
+            }
+        }
+    }
+    
+    /**
+     * Mostra il popup combo
+     * @param {number} count - Numero di frutti nella combo
+     * @param {number} bonus - Punti bonus ottenuti
+     */
+    function showCombo(count, bonus) {
+        if (!comboPopup) return;
+        comboPopup.textContent = 'COMBO x' + count + '  +' + bonus;
+        comboPopup.classList.remove('hidden');
+        comboPopup.style.animation = 'none';
+        comboPopup.offsetHeight;
+        comboPopup.style.animation = 'comboAppear 1s ease forwards';
+        
+        if (comboTimeout) clearTimeout(comboTimeout);
+        comboTimeout = setTimeout(function() {
+            comboPopup.classList.add('hidden');
+        }, 1000);
+    }
+    
+    function hideCombo() {
+        if (comboPopup) comboPopup.classList.add('hidden');
+        if (comboTimeout) { clearTimeout(comboTimeout); comboTimeout = null; }
+    }
+
     // Public API
     return {
         init,
@@ -192,6 +245,9 @@ const UI = (function() {
         showGameLabels,
         hideGameLabels,
         updateScore,
+        updateTimer,
+        showCombo,
+        hideCombo,
         createStartScreen,
         destroyStartScreen,
         hasStartScreen,

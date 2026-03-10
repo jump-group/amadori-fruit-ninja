@@ -12,6 +12,11 @@ const GameObjects = (function() {
     let nextFire = 0;
     let fruitSize = 100;
     
+    // Dynamic difficulty values
+    let currentFireRate = 1400;
+    let currentBombChance = 0.3;
+    let currentSpeedMultiplier = 1.0;
+    
     const config = window.GameConfig;
     
     /**
@@ -118,7 +123,7 @@ const GameObjects = (function() {
      * @returns {number} Velocità (minimo 500)
      */
     function getRandomSpeed() {
-        return Math.max(Math.random() * game.world.height, 500);
+        return Math.max(Math.random() * game.world.height, 500) * currentSpeedMultiplier;
     }
     
     /**
@@ -152,15 +157,28 @@ const GameObjects = (function() {
      * @returns {boolean} True se è stato lanciato qualcosa
      */
     function tryThrowObjects() {
-        if (game.time.now > nextFire && goodObjects.countDead() > 0 && badObjects.countDead() > 0) {
-            nextFire = game.time.now + config.fireRate;
+        if (game.time.now > nextFire && goodObjects.countDead() > 0) {
+            nextFire = game.time.now + currentFireRate;
             throwGoodObject();
-            if (Math.random() > 0.5) {
+            if (badObjects.countDead() > 0 && Math.random() < currentBombChance) {
                 throwBadObject();
             }
             return true;
         }
         return false;
+    }
+    
+    /**
+     * Imposta il livello di difficoltà corrente
+     * @param {number} level - Indice del livello (0, 1, 2)
+     */
+    function setDifficulty(level) {
+        var levels = config.difficulty;
+        var idx = Math.min(level, levels.length - 1);
+        var d = levels[idx];
+        currentFireRate = d.fireRate;
+        currentBombChance = d.bombChance;
+        currentSpeedMultiplier = d.speedMultiplier;
     }
     
     /**
@@ -230,6 +248,7 @@ const GameObjects = (function() {
         init,
         createAllGroups,
         setFruitSize,
+        setDifficulty,
         tryThrowObjects,
         killFruit,
         killAllObjects,

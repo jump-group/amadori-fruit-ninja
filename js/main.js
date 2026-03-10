@@ -11,6 +11,14 @@
     let fontSize = 24;
     let fruitSize = 100;
     
+    // Timer
+    let timeRemaining = 60;
+    let timerEvent = null;
+    
+    // Combo tracking
+    let swipeHits = 0;
+    let pointerWasDown = false;
+    
     // Graphics
     let slashes = null;
     let points = [];
@@ -130,6 +138,7 @@
         if (gameStarted) {
             UI.showGameLabels();
             UI.updateScore(score);
+            UI.updateTimer(timeRemaining);
         }
     }
     
@@ -168,13 +177,67 @@
                 .onComplete.add(function() {
                     startImage.destroy();
                     
-                    // Actually start the game
                     gameStarted = true;
-                    UI.showGameLabels();
                     score = 0;
+                    swipeHits = 0;
+                    pointerWasDown = false;
+                    timeRemaining = GameConfig.gameDuration;
+                    
+                    UI.showGameLabels();
                     UI.updateScore(0);
+                    UI.updateTimer(timeRemaining);
+                    GameObjects.setDifficulty(0);
+                    
+                    startTimer();
                     GameObjects.tryThrowObjects();
                 });
+        });
+    }
+    
+    /**
+     * Avvia il countdown di 1 minuto
+     */
+    function startTimer() {
+        if (timerEvent) {
+            game.time.events.remove(timerEvent);
+        }
+        timerEvent = game.time.events.loop(1000, function() {
+            timeRemaining--;
+            UI.updateTimer(timeRemaining);
+            
+            var elapsed = GameConfig.gameDuration - timeRemaining;
+            var level = Math.floor(elapsed / 20);
+            GameObjects.setDifficulty(level);
+            
+            if (timeRemaining <= 0) {
+                onTimeUp();
+            }
+        });
+    }
+    
+    /**
+     * Quando il tempo scade
+     */
+    function onTimeUp() {
+        if (!gameStarted) return;
+        gameStarted = false;
+        
+        if (timerEvent) {
+            game.time.events.remove(timerEvent);
+            timerEvent = null;
+        }
+        
+        var finalScore = score;
+        Leaderboard.saveScore(finalScore);
+        GameObjects.killAllObjects();
+        
+        score = 0;
+        swipeHits = 0;
+        points = [];
+        slashes.clear();
+        
+        game.time.events.add(400, function() {
+            showGameOver(finalScore);
         });
     }
     
@@ -186,27 +249,30 @@
             return;
         }
         
-        // Throw objects
         GameObjects.tryThrowObjects();
-        
-        // Handle input
         handleSlashInput();
     }
     
     /**
-     * Gestisce l'input di slash
+     * Gestisce l'input di slash con tracking combo
      */
     function handleSlashInput() {
-        const pointer = game.input.activePointer;
+        var pointer = game.input.activePointer;
+        var isDown = pointer && pointer.isDown;
         
-        if (pointer && pointer.isDown) {
-            points.push({
-                x: pointer.x,
-                y: pointer.y
-            });
+        if (isDown) {
+            if (!pointerWasDown) {
+                swipeHits = 0;
+            }
+            pointerWasDown = true;
+            
+            points.push({ x: pointer.x, y: pointer.y });
             points = points.splice(points.length - 10, points.length);
         } else {
-            // Clear points when not pressing
+            if (pointerWasDown) {
+                onSwipeEnd();
+            }
+            pointerWasDown = false;
             points = [];
             slashes.clear();
             return;
@@ -216,11 +282,22 @@
             return;
         }
 
-        // Draw slash trail
         drawSlashTrail();
-        
-        // Check intersections
         checkSlashIntersections();
+    }
+    
+    /**
+     * Quando il dito/mouse viene rilasciato, calcola la combo
+     */
+    function onSwipeEnd() {
+        var minHits = GameConfig.comboMinHits;
+        if (swipeHits >= minHits) {
+            var bonus = swipeHits;
+            score += bonus;
+            UI.updateScore(score);
+            UI.showCombo(swipeHits, bonus);
+        }
+        swipeHits = 0;
     }
     
     /**
@@ -291,41 +368,23 @@
     }
     
     /**
-     * Gestisce il colpo su un oggetto buono
-     * @param {Object} fruit - Lo sprite colpito
+     * Gestisce il colpo su un oggetto buono: +1 punto, incrementa contatore swipe
      */
     function onGoodObjectHit(fruit) {
         GameObjects.killFruit(fruit);
-        points = [];
         score += 1;
+        swipeHits += 1;
         UI.updateScore(score);
     }
     
     /**
-     * Gestisce il colpo su una bomba
-     * @param {Object} bomb - Lo sprite della bomba colpita
+     * Gestisce il colpo su una bomba: -10 punti (min 0), reset combo
      */
     function onBadObjectHit(bomb) {
-        // Ferma il gioco immediatamente
-        gameStarted = false;
-        
-        const finalScore = score;
-        
-        // Save score before reset
-        Leaderboard.saveScore(finalScore);
-        
-        // Kill all objects (con animazione esplosione sulla bomba)
-        GameObjects.killAllObjects();
-        
-        // Reset game state
-        score = 0;
-        points = [];
-        slashes.clear();
-        
-        // Aspetta che l'animazione dell'esplosione finisca (circa 350ms per 8 frame a 24fps)
-        game.time.events.add(400, function() {
-            showGameOver(finalScore);
-        });
+        GameObjects.killFruit(bomb);
+        score = Math.max(0, score - GameConfig.bombPenalty);
+        swipeHits = 0;
+        UI.updateScore(score);
     }
     
     /**
