@@ -169,19 +169,24 @@ const GameObjects = (function() {
      * @param {boolean} silent - Se true, non aggiorna il punteggio
      */
     function killFruit(fruit, silent = false) {
-        var spriteKey = fruit.key || 'bomb';
-        playSliceAnimation(fruit.x, fruit.y, spriteKey);
+        var elementKey = fruit.key || 'bomb';
+        playSliceAnimation(fruit.x, fruit.y, elementKey);
         fruit.kill();
     }
     
     /**
-     * Riproduce l'animazione di slice usando lo spritesheet dell'elemento corrispondente
+     * Riproduce l'animazione di slice usando lo spritesheet dell'elemento
      * @param {number} x - Posizione X
      * @param {number} y - Posizione Y
      * @param {string} elementKey - Chiave dell'elemento (bean, chicken, egg, pig, bomb)
      */
     function playSliceAnimation(x, y, elementKey) {
         var sheetKey = elementKey + 'Slice';
+
+        if (!game.cache.checkImageKey(sheetKey)) {
+            sheetKey = 'bombSlice';
+        }
+
         var explosion = game.add.sprite(x, y, sheetKey);
         explosion.anchor.setTo(0.5, 0.5);
         
