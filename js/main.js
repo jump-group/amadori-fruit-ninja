@@ -28,7 +28,7 @@
             create: create,
             update: update,
             render: render
-        });
+        }, true); // transparent canvas
     }
     
     /**
@@ -36,9 +36,26 @@
      */
     function preload() {
         const assets = GameConfig.assets;
-        game.load.image('apple', assets.apple);
+        
+        // Carica elementi di gioco (buoni)
+        game.load.image('bean', assets.bean);
+        game.load.image('chicken', assets.chicken);
+        game.load.image('egg', assets.egg);
+        game.load.image('pig', assets.pig);
+        
+        // Carica bomba e altri asset
         game.load.image('bomb', assets.bomb);
         game.load.image('explosion', assets.explosion);
+        game.load.image('start', assets.start);
+        game.load.image('game', assets.game);
+        game.load.image('over', assets.over);
+        
+        // Carica spritesheets per animazioni di slice (uno per ogni elemento)
+        const sheets = GameConfig.spritesheets;
+        Object.keys(sheets).forEach(function(key) {
+            const s = sheets[key];
+            game.load.spritesheet(key + 'Slice', s.path, s.frameWidth, s.frameHeight, s.frameCount);
+        });
     }
     
     /**
@@ -50,6 +67,9 @@
         game.scale.pageAlignHorizontally = true;
         game.scale.pageAlignVertically = true;
         
+        // Prevent Phaser from pausing/resuming when tab loses focus
+        game.stage.disableVisibilityChange = true;
+        
         // Enable touch input
         game.input.maxPointers = 1;
         game.input.addPointer();
@@ -57,7 +77,6 @@
         // Setup physics
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.physics.arcade.gravity.y = GameConfig.gravity;
-        game.stage.backgroundColor = GameConfig.backgroundColor;
 
         // Initialize modules
         GameObjects.init(game);
@@ -125,12 +144,38 @@
      * Avvia il gioco
      */
     function startGame() {
-        gameStarted = true;
         UI.destroyStartScreen();
-        UI.showGameLabels();
-        score = 0;
-        UI.updateScore(0);
-        GameObjects.tryThrowObjects();
+        
+        // Show start image with animation
+        const startImage = game.add.sprite(game.world.centerX, game.world.centerY, 'start');
+        startImage.anchor.setTo(0.5, 0.5);
+        
+        // Scale to fit screen (max 25% of screen width)
+        const maxWidth = game.world.width * 0.25;
+        const targetScale = maxWidth / startImage.width;
+        
+        // Start with scale 0 and fade in
+        startImage.alpha = 0;
+        startImage.scale.setTo(0, 0);
+        
+        // Animate: scale up and fade in
+        game.add.tween(startImage.scale).to({ x: targetScale, y: targetScale }, 300, Phaser.Easing.Back.Out, true);
+        game.add.tween(startImage).to({ alpha: 1 }, 300, Phaser.Easing.Linear.None, true);
+        
+        // After 1 second, fade out and start the game
+        game.time.events.add(1000, function() {
+            game.add.tween(startImage).to({ alpha: 0 }, 200, Phaser.Easing.Linear.None, true)
+                .onComplete.add(function() {
+                    startImage.destroy();
+                    
+                    // Actually start the game
+                    gameStarted = true;
+                    UI.showGameLabels();
+                    score = 0;
+                    UI.updateScore(0);
+                    GameObjects.tryThrowObjects();
+                });
+        });
     }
     
     /**
@@ -152,11 +197,8 @@
      * Gestisce l'input di slash
      */
     function handleSlashInput() {
-        // Use pointer1 for both mouse and touch
-        const pointer = game.input.pointer1.isDown ? game.input.pointer1 : 
-                        (game.input.mousePointer.isDown ? game.input.mousePointer : null);
+        const pointer = game.input.activePointer;
         
-        // Only track slashing when mouse/touch is down
         if (pointer && pointer.isDown) {
             points.push({
                 x: pointer.x,
@@ -243,7 +285,7 @@
             if (isGood) {
                 onGoodObjectHit(fruit);
             } else {
-                onBadObjectHit();
+                onBadObjectHit(fruit);
             }
         }
     }
@@ -261,12 +303,18 @@
     
     /**
      * Gestisce il colpo su una bomba
+     * @param {Object} bomb - Lo sprite della bomba colpita
      */
-    function onBadObjectHit() {
-        // Save score before reset
-        Leaderboard.saveScore(score);
+    function onBadObjectHit(bomb) {
+        // Ferma il gioco immediatamente
+        gameStarted = false;
         
-        // Kill all objects
+        const finalScore = score;
+        
+        // Save score before reset
+        Leaderboard.saveScore(finalScore);
+        
+        // Kill all objects (con animazione esplosione sulla bomba)
         GameObjects.killAllObjects();
         
         // Reset game state
@@ -274,10 +322,21 @@
         points = [];
         slashes.clear();
         
-        // Return to start screen
-        gameStarted = false;
-        Leaderboard.load();
-        showStartScreen();
+        // Aspetta che l'animazione dell'esplosione finisca (circa 350ms per 8 frame a 24fps)
+        game.time.events.add(400, function() {
+            showGameOver(finalScore);
+        });
+    }
+    
+    /**
+     * Mostra il popup Game Over sopra la schermata di gioco
+     * @param {number} finalScore - Punteggio finale da mostrare
+     */
+    function showGameOver(finalScore) {
+        UI.showGameOverPopup(finalScore, function() {
+            UI.hideGameOverPopup();
+            startGame();
+        });
     }
     
     /**

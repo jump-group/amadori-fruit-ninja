@@ -6,14 +6,19 @@
 const UI = (function() {
     // Private variables
     let game = null;
-    let tipLabel = null;
-    let scoreLabel = null;
     let fontSize = 24;
     let onStartCallback = null;
     
     // DOM elements
     let splashScreen = null;
     let startButton = null;
+    let scoreContainer = null;
+    let scoreValue = null;
+    let gameOverPopup = null;
+    let gameOverScoreEl = null;
+    let gameOverNicknameInput = null;
+    let gameOverPlayAgainBtn = null;
+    let onPlayAgainCallback = null;
     
     /**
      * Inizializza il modulo con il riferimento al game Phaser
@@ -25,6 +30,22 @@ const UI = (function() {
         // Get DOM references
         splashScreen = document.getElementById('splash-screen');
         startButton = document.getElementById('start-button');
+        scoreContainer = document.getElementById('score-container');
+        scoreValue = document.getElementById('score-value');
+        gameOverPopup = document.getElementById('game-over-popup');
+        gameOverScoreEl = document.getElementById('game-over-score-value');
+        gameOverNicknameInput = document.getElementById('game-over-nickname');
+        gameOverPlayAgainBtn = document.getElementById('game-over-play-again-btn');
+        
+        if (gameOverPlayAgainBtn) {
+            gameOverPlayAgainBtn.addEventListener('click', handlePlayAgainClick);
+            gameOverPlayAgainBtn.addEventListener('touchend', handlePlayAgainClick);
+        }
+
+        if (gameOverPopup) {
+            gameOverPopup.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+            gameOverPopup.addEventListener('touchstart', function(e) { e.stopPropagation(); });
+        }
         
         // Setup start button listener
         if (startButton) {
@@ -42,43 +63,31 @@ const UI = (function() {
     }
     
     /**
-     * Crea le label di gioco (tip e score)
+     * Crea le label di gioco (non più usata)
      */
     function createGameLabels() {
-        const padding = Math.max(Math.round(game.world.width * 0.02), 10);
-        const lineSpacing = Math.round(fontSize * 1.5);
-        
-        tipLabel = game.add.text(padding, padding, 'Affetta le monete, evita la dinamite!');
-        tipLabel.fill = 'white';
-        tipLabel.fontSize = fontSize;
-
-        scoreLabel = game.add.text(padding, padding + lineSpacing);
-        scoreLabel.fontSize = fontSize;
+        // Score ora gestito via HTML
     }
     
     /**
      * Distrugge e ricrea le label (per resize)
      */
     function recreateLabels() {
-        if (tipLabel) tipLabel.destroy();
-        if (scoreLabel) scoreLabel.destroy();
-        createGameLabels();
+        // Score ora gestito via HTML
     }
     
     /**
      * Mostra le label di gioco
      */
     function showGameLabels() {
-        if (tipLabel) tipLabel.visible = true;
-        if (scoreLabel) scoreLabel.visible = true;
+        if (scoreContainer) scoreContainer.classList.remove('hidden');
     }
     
     /**
      * Nasconde le label di gioco
      */
     function hideGameLabels() {
-        if (tipLabel) tipLabel.visible = false;
-        if (scoreLabel) scoreLabel.visible = false;
+        if (scoreContainer) scoreContainer.classList.add('hidden');
     }
     
     /**
@@ -86,9 +95,8 @@ const UI = (function() {
      * @param {number} score - Punteggio da visualizzare
      */
     function updateScore(score) {
-        if (scoreLabel) {
-            scoreLabel.text = `Score: ${score}`;
-            scoreLabel.fill = '#9adcfa';
+        if (scoreValue) {
+            scoreValue.textContent = score;
         }
     }
     
@@ -107,6 +115,43 @@ const UI = (function() {
         
         // Hide game UI
         hideGameLabels();
+    }
+    
+    /**
+     * Mostra il popup Game Over con il punteggio finale
+     * @param {number} finalScore - Punteggio da mostrare
+     * @param {Function} onPlayAgain - Callback quando si preme "Gioca ancora"
+     */
+    function showGameOverPopup(finalScore, onPlayAgain) {
+        onPlayAgainCallback = onPlayAgain;
+        if (gameOverScoreEl) gameOverScoreEl.textContent = finalScore;
+        if (gameOverNicknameInput) gameOverNicknameInput.value = '';
+        if (gameOverPopup) {
+            gameOverPopup.classList.remove('hidden');
+            gameOverPopup.style.animation = 'none';
+            gameOverPopup.offsetHeight; // force reflow to restart animation
+            gameOverPopup.style.animation = '';
+        }
+    }
+    
+    /**
+     * Nasconde il popup Game Over
+     */
+    function hideGameOverPopup() {
+        if (gameOverPopup) gameOverPopup.classList.add('hidden');
+    }
+    
+    /**
+     * Gestisce il click su "Gioca ancora"
+     */
+    function handlePlayAgainClick(e) {
+        if (e) {
+            e.preventDefault();
+        }
+        hideGameOverPopup();
+        if (onPlayAgainCallback) {
+            onPlayAgainCallback();
+        }
     }
     
     /**
@@ -149,7 +194,9 @@ const UI = (function() {
         updateScore,
         createStartScreen,
         destroyStartScreen,
-        hasStartScreen
+        hasStartScreen,
+        showGameOverPopup,
+        hideGameOverPopup
     };
 })();
 

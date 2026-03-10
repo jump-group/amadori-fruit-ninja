@@ -164,15 +164,37 @@ const GameObjects = (function() {
     }
     
     /**
-     * Uccide un frutto con effetto particelle
+     * Uccide un frutto con effetto particelle e animazione esplosione
      * @param {Object} fruit - Sprite del frutto
      * @param {boolean} silent - Se true, non aggiorna il punteggio
      */
     function killFruit(fruit, silent = false) {
-        emitter.x = fruit.x;
-        emitter.y = fruit.y;
-        emitter.start(true, config.particleLifespan, null, config.particleCount);
+        var spriteKey = fruit.key || 'bomb';
+        playSliceAnimation(fruit.x, fruit.y, spriteKey);
         fruit.kill();
+    }
+    
+    /**
+     * Riproduce l'animazione di slice usando lo spritesheet dell'elemento corrispondente
+     * @param {number} x - Posizione X
+     * @param {number} y - Posizione Y
+     * @param {string} elementKey - Chiave dell'elemento (bean, chicken, egg, pig, bomb)
+     */
+    function playSliceAnimation(x, y, elementKey) {
+        var sheetKey = elementKey + 'Slice';
+        var explosion = game.add.sprite(x, y, sheetKey);
+        explosion.anchor.setTo(0.5, 0.5);
+        
+        var scale = config.sliceAnimation ? config.sliceAnimation.scale : 0.4;
+        explosion.scale.setTo(scale, scale);
+        
+        var frameRate = config.sliceAnimation ? config.sliceAnimation.frameRate : 24;
+        explosion.animations.add('explode', null, frameRate, false);
+        explosion.animations.play('explode');
+        
+        explosion.animations.currentAnim.onComplete.add(function() {
+            explosion.destroy();
+        });
     }
     
     /**

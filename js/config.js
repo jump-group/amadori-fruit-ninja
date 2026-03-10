@@ -5,7 +5,7 @@
 
 const GameConfig = {
     // Oggetti di gioco
-    fruits: ['apple'],
+    fruits: ['bean', 'chicken', 'egg', 'pig'],
     
     // Fisica e timing
     gravity: 300,
@@ -30,9 +30,55 @@ const GameConfig = {
     
     // Asset paths
     assets: {
-        apple: 'images/fruits/apple.png',
-        bomb: 'images/bomb.png',
-        explosion: 'images/explosion.png'
+        bean: 'images/elements/bean.png',
+        chicken: 'images/elements/chicken.png',
+        egg: 'images/elements/egg.png',
+        pig: 'images/elements/pig.png',
+        bomb: 'images/elements/dinamite.png',
+        explosion: 'images/explosion.png',
+        start: 'images/start.png',
+        game: 'images/game.png',
+        over: 'images/over.png'
+    },
+    
+    // Spritesheets per animazioni (ogni elemento ha il suo)
+    spritesheets: {
+        bean: {
+            path: 'images/spritesheets/bean.png',
+            frameWidth: 512,
+            frameHeight: 512,
+            frameCount: 10
+        },
+        chicken: {
+            path: 'images/spritesheets/chicken.png',
+            frameWidth: 512,
+            frameHeight: 512,
+            frameCount: 10
+        },
+        egg: {
+            path: 'images/spritesheets/egg.png',
+            frameWidth: 512,
+            frameHeight: 512,
+            frameCount: 10
+        },
+        pig: {
+            path: 'images/spritesheets/pig.png',
+            frameWidth: 512,
+            frameHeight: 512,
+            frameCount: 10
+        },
+        bomb: {
+            path: 'images/spritesheets/dinamite.png',
+            frameWidth: 512,
+            frameHeight: 512,
+            frameCount: 8
+        }
+    },
+    
+    // Configurazione animazione slice
+    sliceAnimation: {
+        frameRate: 24,
+        scale: 0.4
     }
 };
 
