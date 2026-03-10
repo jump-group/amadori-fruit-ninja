@@ -1,132 +1,86 @@
-# Amadori Fruit Ninja 🍉
+# Protein Hunter
 
-Un gioco web in stile Fruit Ninja realizzato con [Phaser.js 2.6.2](https://phaser.io/) e [Three.js](https://threejs.org/) per la renderizzazione di modelli 3D.
-
-## Screenshot
-![Screenshot](screenshot.png)
+Un gioco web in stile Fruit Ninja realizzato con [Phaser.js 2.6.2](https://phaser.io/) per Amadori.
 
 ## Descrizione
 
-Il gioco è un clone di Fruit Ninja personalizzato per Amadori. L'obiettivo è tagliare le spille 3D che volano sullo schermo evitando le bombe. Ogni spilla tagliata aumenta il punteggio, mentre colpire una bomba termina la partita.
+L'obiettivo è tagliare le monete proteiche che volano sullo schermo, creando combo ed evitando la dinamite. La partita dura 60 secondi e la difficoltà aumenta progressivamente.
 
 ### Caratteristiche
-- 🎮 Gameplay touch-friendly (funziona su mobile, tablet e desktop)
-- 🏆 Leaderboard locale con i migliori 5 punteggi
-- 📱 Design responsive che si adatta a qualsiasi dimensione schermo
-- 🎨 Modelli 3D renderizzati con Three.js
-- ⚡ Fisica realistica con Phaser.js
+- Gameplay touch-friendly (mobile, tablet e desktop)
+- Sistema combo: tagliare 3+ elementi in uno swipe dà punti bonus
+- Difficoltà progressiva ogni 20 secondi (velocità, frequenza bombe)
+- Dinamite: -10 punti e reset combo
+- Timer da 60 secondi con game over popup
+- Animazioni di slice dedicate per ogni elemento
+- Leaderboard locale (top 5)
+- Design responsive
 
 ## Come si gioca
 
-1. Premi **GIOCA** nella schermata iniziale
-2. Trascina il dito (o il mouse) sullo schermo per "tagliare"
-3. Colpisci le **spille 3D** per guadagnare punti
-4. **Evita le bombe!** Colpirne una termina la partita
-5. Il tuo punteggio viene salvato nella leaderboard
+1. Premi **Gioca ora** nella schermata iniziale
+2. Trascina il dito (o il mouse) sullo schermo per tagliare
+3. Colpisci le **monete proteiche** per guadagnare punti (+1 ciascuna)
+4. Taglia **3+ elementi in uno swipe** per attivare una combo (+N punti bonus)
+5. **Evita la dinamite!** Ogni bomba colpita sottrae 10 punti e resetta la combo
+6. La partita termina allo scadere del timer di 60 secondi
 
-## Struttura della Codebase
+## Struttura del Progetto
 
 ```
 amadori-fruit-ninja/
-├── index.html              # Entry point HTML
+├── index.html
 ├── css/
-│   └── style.css           # Stili CSS
+│   └── style.css
 ├── js/
-│   ├── config.js           # Configurazione e costanti di gioco
-│   ├── leaderboard.js      # Gestione punteggi e localStorage
-│   ├── three-setup.js      # Setup Three.js e rendering 3D
-│   ├── game-objects.js     # Logica frutti, bombe e fisica
-│   ├── ui.js               # Interfaccia utente e schermate
-│   └── main.js             # Controller principale del gioco
-├── assets/
-│   └── models/             # Modelli 3D (.glb)
+│   ├── config.js           # Configurazione, costanti, livelli di difficoltà
+│   ├── leaderboard.js      # Gestione punteggi (localStorage)
+│   ├── game-objects.js     # Frutti, bombe, fisica, animazioni slice
+│   ├── ui.js               # UI: splash, score, timer, combo, game over
+│   └── main.js             # Game loop, combo, timer, difficoltà
 └── images/
-    ├── fruits/             # Sprite dei frutti
-    ├── bomb.png            # Sprite bomba
-    └── explosion.png       # Sprite esplosione
+    ├── elements/           # Sprite degli elementi di gioco
+    ├── spritesheets/       # Spritesheets animazioni di slice
+    ├── background.png
+    └── decorative-stripes.png
 ```
 
 ### Moduli
 
 | Modulo | Responsabilità |
 |--------|----------------|
-| `config.js` | Costanti di gioco, configurazione Three.js, calcolo dimensioni responsive |
+| `config.js` | Costanti, livelli di difficoltà, calcolo dimensioni responsive |
 | `leaderboard.js` | Salvataggio/caricamento punteggi da localStorage |
-| `three-setup.js` | Inizializzazione scena 3D, caricamento modelli GLB, rendering |
-| `game-objects.js` | Creazione gruppi Phaser, lancio oggetti, gestione collisioni |
-| `ui.js` | Schermata iniziale, label di gioco, punteggio |
-| `main.js` | Game loop principale, orchestrazione dei moduli |
+| `game-objects.js` | Gruppi Phaser, lancio oggetti, difficoltà dinamica, animazioni |
+| `ui.js` | Splash screen, score, timer, combo popup, game over popup |
+| `main.js` | Game loop, tracking combo/swipe, timer, orchestrazione moduli |
 
 ## Avvio in Locale
 
 ### Prerequisiti
 - Un browser moderno (Chrome, Firefox, Safari, Edge)
-- Un server locale (necessario per caricare i modelli 3D)
+- Un server locale per servire i file
 
-### Metodo 1: Python (consigliato)
+### Python (consigliato)
 
 ```bash
-# Python 3
 cd amadori-fruit-ninja
-python -m http.server 8000
-
-# Python 2
-cd amadori-fruit-ninja
-python -SimpleHTTPServer 8000
+python3 -m http.server 8000
 ```
 
 Apri http://localhost:8000 nel browser.
 
-### Metodo 2: Node.js
+### Node.js
 
 ```bash
-# Installa http-server globalmente
-npm install -g http-server
-
-# Avvia il server
-cd amadori-fruit-ninja
-http-server -p 8000
+npx serve -l 8000
 ```
 
-Apri http://localhost:8000 nel browser.
+### VS Code / Cursor Live Server
 
-### Metodo 3: VS Code Live Server
-
-1. Installa l'estensione **Live Server** in VS Code
-2. Apri il progetto in VS Code
-3. Click destro su `index.html` → "Open with Live Server"
-
-### Metodo 4: PHP
-
-```bash
-cd amadori-fruit-ninja
-php -S localhost:8000
-```
-
-## Test
-
-Il gioco non ha un framework di test automatizzato. Per testare manualmente:
-
-1. **Avvia il server locale** (vedi sopra)
-2. **Verifica la schermata iniziale**: deve mostrare titolo, leaderboard e pulsante GIOCA
-3. **Testa il gameplay**: 
-   - Le spille 3D devono apparire e ruotare
-   - Il taglio deve funzionare con mouse e touch
-   - Il punteggio deve incrementare
-4. **Testa le bombe**: colpire una bomba deve terminare la partita
-5. **Verifica la leaderboard**: i punteggi devono persistere dopo il refresh
-6. **Testa il responsive**: ridimensiona la finestra o usa DevTools per simulare dispositivi
-
-### Debug
-
-Apri la console del browser (F12) per vedere eventuali errori. Il caricamento del modello 3D logga `3D model loaded successfully!` se avvenuto correttamente.
+1. Installa l'estensione **Live Server**
+2. Click destro su `index.html` → "Open with Live Server"
 
 ## Tecnologie
 
 - **[Phaser.js 2.6.2](https://phaser.io/)** - Game engine 2D
-- **[Three.js r128](https://threejs.org/)** - Rendering 3D
-- **GLTFLoader** - Caricamento modelli 3D in formato GLB
-
-## Credits
-
-- <a href="https://iconscout.com/icon/orange-1624198" target="_blank">Orange Icon</a> by <a href="https://iconscout.com/contributors/iconscout" target="_blank">Iconscout Freebies</a>
