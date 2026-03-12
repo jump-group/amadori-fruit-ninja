@@ -4,70 +4,59 @@
  */
 
 const Leaderboard = (function() {
-    const STORAGE_KEY = 'leaderboard';
-    const HIGHSCORE_KEY = 'highscore';
-    const MAX_ENTRIES = window.GameConfig ? window.GameConfig.maxLeaderboardEntries : 5;
+    const STORAGE_KEY = 'leaderboard_v2';
     
-    let scores = [];
+    let entries = [];
     
-    /**
-     * Carica la leaderboard dal localStorage
-     * @returns {Array} Array dei punteggi
-     */
     function load() {
-        const stored = localStorage.getItem(STORAGE_KEY);
+        var stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
-            scores = JSON.parse(stored);
+            try {
+                entries = JSON.parse(stored);
+            } catch (e) {
+                entries = [];
+            }
         } else {
-            scores = [];
+            entries = [];
         }
-        // Keep only top scores
-        scores = scores.sort((a, b) => b - a).slice(0, MAX_ENTRIES);
-        return scores;
+        entries.sort(function(a, b) { return b.score - a.score; });
+        return entries;
     }
     
-    /**
-     * Salva un nuovo punteggio nella leaderboard
-     * @param {number} newScore - Punteggio da salvare
-     */
-    function saveScore(newScore) {
-        if (newScore <= 0) return;
+    function saveScore(nickname, score) {
+        if (score <= 0) return;
         
-        scores.push(newScore);
-        scores = scores.sort((a, b) => b - a).slice(0, MAX_ENTRIES);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(scores));
+        var name = (nickname || '').trim();
+        if (!name) name = 'Anonimo';
         
-        // Aggiorna anche l'highscore
-        const currentHighscore = getHighscore();
-        if (newScore > currentHighscore) {
-            localStorage.setItem(HIGHSCORE_KEY, newScore);
-        }
+        entries.push({ nickname: name, score: score });
+        entries.sort(function(a, b) { return b.score - a.score; });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
     }
     
     /**
      * Ottiene l'highscore corrente
-     * @returns {number} Highscore
+     * @returns {number}
      */
     function getHighscore() {
-        const stored = localStorage.getItem(HIGHSCORE_KEY);
-        return stored ? parseInt(stored, 10) : 0;
+        if (entries.length === 0) return 0;
+        return entries[0].score;
     }
     
     /**
-     * Ottiene l'array dei punteggi correnti
-     * @returns {Array} Array dei punteggi
+     * Ottiene l'array delle entries correnti
+     * @returns {Array} Array di {nickname, score}
      */
-    function getScores() {
-        return scores;
+    function getEntries() {
+        return entries;
     }
     
     /**
-     * Resetta la leaderboard (per debug)
+     * Resetta la leaderboard
      */
     function reset() {
-        scores = [];
+        entries = [];
         localStorage.removeItem(STORAGE_KEY);
-        localStorage.removeItem(HIGHSCORE_KEY);
     }
     
     // Public API
@@ -75,7 +64,7 @@ const Leaderboard = (function() {
         load,
         saveScore,
         getHighscore,
-        getScores,
+        getEntries,
         reset
     };
 })();

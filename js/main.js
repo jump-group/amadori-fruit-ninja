@@ -57,6 +57,7 @@
         game.load.image('start', assets.start);
         game.load.image('game', assets.game);
         game.load.image('over', assets.over);
+        game.load.image('combo', 'images/combo.png');
         
         // Carica spritesheets per animazioni di slice (uno per ogni elemento)
         const sheets = GameConfig.spritesheets;
@@ -146,7 +147,7 @@
      * Mostra la schermata di start
      */
     function showStartScreen() {
-        UI.createStartScreen(Leaderboard.getScores(), startGame);
+        UI.createStartScreen(Leaderboard.getEntries(), startGame);
     }
     
     /**
@@ -228,7 +229,6 @@
         }
         
         var finalScore = score;
-        Leaderboard.saveScore(finalScore);
         GameObjects.killAllObjects();
         
         score = 0;
@@ -295,9 +295,47 @@
             var bonus = swipeHits;
             score += bonus;
             UI.updateScore(score);
-            UI.showCombo(swipeHits, bonus);
+            showComboImage(bonus);
         }
         swipeHits = 0;
+    }
+    
+    function showComboImage(bonus) {
+        var cx = game.world.centerX;
+        var cy = game.world.centerY;
+
+        var img = game.add.sprite(cx, cy, 'combo');
+        img.anchor.setTo(0.5, 0.5);
+        
+        var maxWidth = game.world.width * 0.3;
+        var targetScale = maxWidth / img.width;
+
+        var comboTextSize = Math.round(game.world.width * 0.08);
+        var bonusText = game.add.text(cx, cy + (img.height * targetScale * 0.5) + comboTextSize * 0.3, '+' + bonus, {
+            font: 'bold ' + comboTextSize + 'px Arial',
+            fill: '#BD1923',
+            stroke: '#FFFFFF',
+            strokeThickness: Math.round(comboTextSize * 0.15),
+            align: 'center'
+        });
+        bonusText.anchor.setTo(0.5, 0.5);
+        
+        img.alpha = 0;
+        img.scale.setTo(0, 0);
+        bonusText.alpha = 0;
+        bonusText.scale.setTo(0, 0);
+        
+        game.add.tween(img.scale).to({ x: targetScale, y: targetScale }, 250, Phaser.Easing.Back.Out, true);
+        game.add.tween(img).to({ alpha: 1 }, 200, Phaser.Easing.Linear.None, true);
+        game.add.tween(bonusText.scale).to({ x: 1, y: 1 }, 250, Phaser.Easing.Back.Out, true);
+        game.add.tween(bonusText).to({ alpha: 1 }, 200, Phaser.Easing.Linear.None, true);
+        
+        game.time.events.add(600, function() {
+            game.add.tween(img).to({ alpha: 0 }, 200, Phaser.Easing.Linear.None, true)
+                .onComplete.add(function() { img.destroy(); });
+            game.add.tween(bonusText).to({ alpha: 0 }, 200, Phaser.Easing.Linear.None, true)
+                .onComplete.add(function() { bonusText.destroy(); });
+        });
     }
     
     /**
@@ -392,10 +430,16 @@
      * @param {number} finalScore - Punteggio finale da mostrare
      */
     function showGameOver(finalScore) {
-        UI.showGameOverPopup(finalScore, function() {
-            UI.hideGameOverPopup();
-            startGame();
-        });
+        UI.showGameOverPopup(
+            finalScore,
+            function(nickname) {
+                Leaderboard.saveScore(nickname, finalScore);
+            },
+            function() {
+                UI.hideGameOverPopup();
+                startGame();
+            }
+        );
     }
     
     /**

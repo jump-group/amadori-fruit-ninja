@@ -21,7 +21,17 @@ const UI = (function() {
     let gameOverPopup = null;
     let gameOverScoreEl = null;
     let gameOverNicknameInput = null;
+    let gameOverSaveBtn = null;
+    let gameOverStepNickname = null;
+    let gameOverStepActions = null;
+    let gameOverSavedMsg = null;
     let gameOverPlayAgainBtn = null;
+    let gameOverLeaderboardBtn = null;
+    let leaderboardPopup = null;
+    let leaderboardList = null;
+    let leaderboardEmpty = null;
+    let leaderboardCloseBtn = null;
+    let onSaveCallback = null;
     let onPlayAgainCallback = null;
     
     /**
@@ -42,16 +52,45 @@ const UI = (function() {
         gameOverPopup = document.getElementById('game-over-popup');
         gameOverScoreEl = document.getElementById('game-over-score-value');
         gameOverNicknameInput = document.getElementById('game-over-nickname');
+        gameOverSaveBtn = document.getElementById('game-over-save-btn');
+        gameOverStepNickname = document.getElementById('game-over-step-nickname');
+        gameOverStepActions = document.getElementById('game-over-step-actions');
+        gameOverSavedMsg = document.getElementById('game-over-saved-msg');
         gameOverPlayAgainBtn = document.getElementById('game-over-play-again-btn');
+        gameOverLeaderboardBtn = document.getElementById('game-over-leaderboard-btn');
+        leaderboardPopup = document.getElementById('leaderboard-popup');
+        leaderboardList = document.getElementById('leaderboard-list');
+        leaderboardEmpty = document.getElementById('leaderboard-empty');
+        leaderboardCloseBtn = document.getElementById('leaderboard-close-btn');
+        
+        if (gameOverSaveBtn) {
+            gameOverSaveBtn.addEventListener('click', handleSaveClick);
+            gameOverSaveBtn.addEventListener('touchend', handleSaveClick);
+        }
         
         if (gameOverPlayAgainBtn) {
             gameOverPlayAgainBtn.addEventListener('click', handlePlayAgainClick);
             gameOverPlayAgainBtn.addEventListener('touchend', handlePlayAgainClick);
         }
+        
+        if (gameOverLeaderboardBtn) {
+            gameOverLeaderboardBtn.addEventListener('click', handleLeaderboardClick);
+            gameOverLeaderboardBtn.addEventListener('touchend', handleLeaderboardClick);
+        }
+        
+        if (leaderboardCloseBtn) {
+            leaderboardCloseBtn.addEventListener('click', hideLeaderboard);
+            leaderboardCloseBtn.addEventListener('touchend', hideLeaderboard);
+        }
 
         if (gameOverPopup) {
             gameOverPopup.addEventListener('mousedown', function(e) { e.stopPropagation(); });
             gameOverPopup.addEventListener('touchstart', function(e) { e.stopPropagation(); });
+        }
+        
+        if (leaderboardPopup) {
+            leaderboardPopup.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+            leaderboardPopup.addEventListener('touchstart', function(e) { e.stopPropagation(); });
         }
         
         // Setup start button listener
@@ -128,40 +167,54 @@ const UI = (function() {
     }
     
     /**
-     * Mostra il popup Game Over con il punteggio finale
+     * Mostra il popup Game Over con il punteggio finale (step 1: nickname)
      * @param {number} finalScore - Punteggio da mostrare
-     * @param {Function} onPlayAgain - Callback quando si preme "Gioca ancora"
+     * @param {Function} onSave - Callback(nickname) quando si salva il nickname
+     * @param {Function} onPlayAgain - Callback() quando si preme "Gioca ancora"
      */
-    function showGameOverPopup(finalScore, onPlayAgain) {
+    function showGameOverPopup(finalScore, onSave, onPlayAgain) {
+        onSaveCallback = onSave;
         onPlayAgainCallback = onPlayAgain;
+        
         if (gameOverScoreEl) gameOverScoreEl.textContent = finalScore;
         if (gameOverNicknameInput) gameOverNicknameInput.value = '';
+        
+        if (gameOverStepNickname) gameOverStepNickname.classList.remove('hidden');
+        if (gameOverStepActions) gameOverStepActions.classList.add('hidden');
+        
         if (gameOverPopup) {
             gameOverPopup.classList.remove('hidden');
             gameOverPopup.style.animation = 'none';
-            gameOverPopup.offsetHeight; // force reflow to restart animation
+            gameOverPopup.offsetHeight;
             gameOverPopup.style.animation = '';
         }
     }
     
-    /**
-     * Nasconde il popup Game Over
-     */
     function hideGameOverPopup() {
         if (gameOverPopup) gameOverPopup.classList.add('hidden');
     }
     
     /**
-     * Gestisce il click su "Gioca ancora"
+     * Gestisce il click su "Salva punteggio"
      */
+    function handleSaveClick(e) {
+        if (e) e.preventDefault();
+        
+        var nickname = '';
+        if (gameOverNicknameInput) nickname = gameOverNicknameInput.value.trim();
+        if (!nickname) nickname = 'Anonimo';
+        
+        if (onSaveCallback) onSaveCallback(nickname);
+        
+        if (gameOverStepNickname) gameOverStepNickname.classList.add('hidden');
+        if (gameOverStepActions) gameOverStepActions.classList.remove('hidden');
+        if (gameOverSavedMsg) gameOverSavedMsg.textContent = 'Punteggio salvato come "' + nickname + '"';
+    }
+    
     function handlePlayAgainClick(e) {
-        if (e) {
-            e.preventDefault();
-        }
+        if (e) e.preventDefault();
         hideGameOverPopup();
-        if (onPlayAgainCallback) {
-            onPlayAgainCallback();
-        }
+        if (onPlayAgainCallback) onPlayAgainCallback();
     }
     
     /**
@@ -234,6 +287,50 @@ const UI = (function() {
     function hideCombo() {
         if (comboPopup) comboPopup.classList.add('hidden');
         if (comboTimeout) { clearTimeout(comboTimeout); comboTimeout = null; }
+    }
+    
+    function handleLeaderboardClick(e) {
+        if (e) e.preventDefault();
+        showLeaderboard();
+    }
+    
+    function showLeaderboard() {
+        var entries = Leaderboard.getEntries();
+        
+        if (leaderboardList) {
+            leaderboardList.innerHTML = '';
+            entries.forEach(function(entry) {
+                var li = document.createElement('li');
+                li.innerHTML = '<span class="lb-nickname">' + escapeHtml(entry.nickname) + '</span><span class="lb-score">' + entry.score + '</span>';
+                leaderboardList.appendChild(li);
+            });
+        }
+        
+        if (leaderboardEmpty) {
+            if (entries.length === 0) {
+                leaderboardEmpty.classList.remove('hidden');
+            } else {
+                leaderboardEmpty.classList.add('hidden');
+            }
+        }
+        
+        if (leaderboardPopup) {
+            leaderboardPopup.classList.remove('hidden');
+            leaderboardPopup.style.animation = 'none';
+            leaderboardPopup.offsetHeight;
+            leaderboardPopup.style.animation = '';
+        }
+    }
+    
+    function hideLeaderboard(e) {
+        if (e) e.preventDefault();
+        if (leaderboardPopup) leaderboardPopup.classList.add('hidden');
+    }
+    
+    function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
     }
 
     // Public API

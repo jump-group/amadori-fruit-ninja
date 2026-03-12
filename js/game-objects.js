@@ -13,9 +13,10 @@ const GameObjects = (function() {
     let fruitSize = 100;
     
     // Dynamic difficulty values
-    let currentFireRate = 1400;
+    let currentFireRate = 1000;
     let currentBombChance = 0.3;
     let currentSpeedMultiplier = 1.0;
+    let currentFruitsPerWave = 2;
     
     const config = window.GameConfig;
     
@@ -64,7 +65,11 @@ const GameObjects = (function() {
      * Crea tutti i gruppi di oggetti e l'emitter
      */
     function createAllGroups() {
-        goodObjects = createGroup(config.fruits);
+        var allFruits = [];
+        for (var i = 0; i < 3; i++) {
+            allFruits = allFruits.concat(config.fruits);
+        }
+        goodObjects = createGroup(allFruits);
         badObjects = createGroupMultiple(4, 'bomb');
         
         emitter = game.add.emitter(0, 0, 300);
@@ -159,7 +164,10 @@ const GameObjects = (function() {
     function tryThrowObjects() {
         if (game.time.now > nextFire && goodObjects.countDead() > 0) {
             nextFire = game.time.now + currentFireRate;
-            throwGoodObject();
+            var count = Math.min(currentFruitsPerWave, goodObjects.countDead());
+            for (var i = 0; i < count; i++) {
+                throwGoodObject();
+            }
             if (badObjects.countDead() > 0 && Math.random() < currentBombChance) {
                 throwBadObject();
             }
@@ -179,6 +187,7 @@ const GameObjects = (function() {
         currentFireRate = d.fireRate;
         currentBombChance = d.bombChance;
         currentSpeedMultiplier = d.speedMultiplier;
+        currentFruitsPerWave = d.fruitsPerWave || 2;
     }
     
     /**
