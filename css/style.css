@@ -360,6 +360,27 @@ body {
     text-align: center;
 }
 
+.game-over-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(16px, 2vw, 28px);
+    width: 100%;
+}
+
+.game-over-step.hidden {
+    display: none;
+}
+
+.game-over-saved-msg {
+    font-family: 'Barlow', sans-serif;
+    font-weight: 600;
+    font-size: clamp(13px, 1.3vw, 20px);
+    color: #005832;
+    margin: 0;
+    text-align: center;
+}
+
 .game-over-form {
     display: flex;
     flex-direction: column;
@@ -444,14 +465,136 @@ body {
     transform: scale(0.97);
 }
 
+/* ==============================================
+   Leaderboard Popup
+   ============================================== */
+
+.leaderboard-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 95;
+    font-family: 'Barlow', sans-serif;
+    padding: 1rem;
+    box-sizing: border-box;
+    opacity: 0;
+    animation: fadeInOverlay 0.3s ease forwards;
+}
+
+.leaderboard-popup.hidden {
+    display: none;
+}
+
+.leaderboard-popup-box {
+    width: clamp(280px, 32vw, 889px);
+    max-width: calc(100vw - 2rem);
+    max-height: 90vh;
+    background-color: #FFFFFF;
+    border: 3px solid #005832;
+    border-radius: 36px;
+    padding: clamp(28px, 3.2vw, 60px) clamp(28px, 3.4vw, 64px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(16px, 2.5vw, 40px);
+    box-sizing: border-box;
+    overflow-y: auto;
+    animation: scaleInPopup 0.3s ease forwards;
+}
+
+.leaderboard-title {
+    font-family: 'Barlow', sans-serif;
+    font-weight: 700;
+    font-size: clamp(20px, 2.5vw, 44px);
+    color: #005832;
+    margin: 0;
+    text-align: center;
+}
+
+.leaderboard-list {
+    width: 100%;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(4px, 0.5vw, 8px);
+    counter-reset: lb;
+    max-height: 50vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.leaderboard-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: clamp(8px, 1vw, 14px) clamp(12px, 1.5vw, 20px);
+    background-color: #f7f7f7;
+    border-radius: 12px;
+    font-family: 'Barlow', sans-serif;
+    font-size: clamp(13px, 1.3vw, 22px);
+    color: #333;
+    counter-increment: lb;
+}
+
+.leaderboard-list li::before {
+    content: counter(lb) ".";
+    font-weight: 700;
+    color: #005832;
+    margin-right: clamp(8px, 1vw, 16px);
+    min-width: 1.8em;
+}
+
+.leaderboard-list li:first-child {
+    background-color: #e8f5e9;
+    font-weight: 700;
+    color: #005832;
+}
+
+.lb-nickname {
+    flex: 1;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.lb-score {
+    font-weight: 700;
+    color: #BD1923;
+    margin-left: clamp(8px, 1vw, 16px);
+    white-space: nowrap;
+}
+
+.leaderboard-empty {
+    font-family: 'Barlow', sans-serif;
+    font-size: clamp(13px, 1.3vw, 20px);
+    color: #999;
+    margin: 0;
+    text-align: center;
+}
+
+.leaderboard-empty.hidden {
+    display: none;
+}
+
 @media (max-width: 1024px) {
-    .game-over-popup-box {
+    .game-over-popup-box,
+    .leaderboard-popup-box {
         width: clamp(280px, 55vw, 889px);
     }
 }
 
 @media (max-width: 600px) {
-    .game-over-popup-box {
+    .game-over-popup-box,
+    .leaderboard-popup-box {
         width: min(90vw, 889px);
         border-radius: 24px;
         padding: 32px 28px;

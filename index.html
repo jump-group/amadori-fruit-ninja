@@ -59,14 +59,34 @@
                 <h2 class="game-over-title">Punteggio finale</h2>
                 <p class="game-over-score" id="game-over-score-value">0</p>
             </div>
-            <div class="game-over-form">
-                <label class="game-over-label" for="game-over-nickname">Inserisci Nickname</label>
-                <input type="text" id="game-over-nickname" class="game-over-input" placeholder="Inserisci nickname" maxlength="20">
+
+            <!-- Step 1: inserisci nickname -->
+            <div id="game-over-step-nickname" class="game-over-step">
+                <div class="game-over-form">
+                    <label class="game-over-label" for="game-over-nickname">Inserisci Nickname</label>
+                    <input type="text" id="game-over-nickname" class="game-over-input" placeholder="Inserisci nickname" maxlength="20">
+                </div>
+                <button type="button" id="game-over-save-btn" class="game-over-btn game-over-btn-primary">Salva punteggio</button>
             </div>
-            <div class="game-over-buttons">
-                <button type="button" id="game-over-leaderboard-btn" class="game-over-btn game-over-btn-outline">Vedi la classifica</button>
-                <button type="button" id="game-over-play-again-btn" class="game-over-btn game-over-btn-primary">Gioca ancora</button>
+
+            <!-- Step 2: azioni post-salvataggio -->
+            <div id="game-over-step-actions" class="game-over-step hidden">
+                <p id="game-over-saved-msg" class="game-over-saved-msg"></p>
+                <div class="game-over-buttons">
+                    <button type="button" id="game-over-leaderboard-btn" class="game-over-btn game-over-btn-outline">Vedi la classifica</button>
+                    <button type="button" id="game-over-play-again-btn" class="game-over-btn game-over-btn-primary">Gioca ancora</button>
+                </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard Popup -->
+    <div id="leaderboard-popup" class="leaderboard-popup hidden">
+        <div class="leaderboard-popup-box">
+            <h2 class="leaderboard-title">Classifica</h2>
+            <ol id="leaderboard-list" class="leaderboard-list"></ol>
+            <p id="leaderboard-empty" class="leaderboard-empty hidden">Nessun punteggio salvato.</p>
+            <button type="button" id="leaderboard-close-btn" class="game-over-btn game-over-btn-primary">Chiudi</button>
         </div>
     </div>
 

@@ -146,7 +146,7 @@
      * Mostra la schermata di start
      */
     function showStartScreen() {
-        UI.createStartScreen(Leaderboard.getScores(), startGame);
+        UI.createStartScreen(Leaderboard.getEntries(), startGame);
     }
     
     /**
@@ -228,7 +228,6 @@
         }
         
         var finalScore = score;
-        Leaderboard.saveScore(finalScore);
         GameObjects.killAllObjects();
         
         score = 0;
@@ -392,10 +391,16 @@
      * @param {number} finalScore - Punteggio finale da mostrare
      */
     function showGameOver(finalScore) {
-        UI.showGameOverPopup(finalScore, function() {
-            UI.hideGameOverPopup();
-            startGame();
-        });
+        UI.showGameOverPopup(
+            finalScore,
+            function(nickname) {
+                Leaderboard.saveScore(nickname, finalScore);
+            },
+            function() {
+                UI.hideGameOverPopup();
+                startGame();
+            }
+        );
     }
     
     /**
