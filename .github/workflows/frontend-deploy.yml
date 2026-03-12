@@ -1,0 +1,74 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-deploy-production
+  cancel-in-progress: true
+
+jobs:
+  deploy-production:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Verify required files
+        run: |
+          test -f index.html
+          test -d js
+          test -d css
+          test -d images
+
+      - name: Deploy to S3
+        id: deploy
+        run: |
+          aws s3 sync . s3://${{ secrets.AWS_BUCKET_FRONT_PROD }} \
+            --delete \
+            --acl public-read \
+            --exclude ".git/*" \
+            --exclude ".github/*" \
+            --exclude "README.md" \
+            --exclude "screenshot.png"
+
+      - name: Invalidate CloudFront
+        if: success()
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ secrets.DISTRIBUTION_FRONT_PROD }}" \
+            --paths "/*"
+
+      - name: Notify Failure
+        if: failure()
+        uses: voxmedia/github-action-slack-notify-build@v1
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
+        with:
+          channel_id: C049RNZ524T
+          status: FAILED
+          color: danger
+
+      - name: Notify Success
+        if: success()
+        uses: voxmedia/github-action-slack-notify-build@v1
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
+        with:
+          channel_id: C049RNZ524T
+          status: SUCCESS
+          color: good
