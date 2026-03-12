@@ -13,9 +13,9 @@ const GameConfig = {
     
     // Livelli di difficoltà (ogni 20 secondi)
     difficulty: [
-        { fireRate: 1400, bombChance: 0.3, speedMultiplier: 1.0 },
-        { fireRate: 1100, bombChance: 0.5, speedMultiplier: 1.15 },
-        { fireRate: 850,  bombChance: 0.65, speedMultiplier: 1.3 }
+        { fireRate: 1000, bombChance: 0.25, speedMultiplier: 1.0,  fruitsPerWave: 2 },
+        { fireRate: 850,  bombChance: 0.4,  speedMultiplier: 1.15, fruitsPerWave: 3 },
+        { fireRate: 700,  bombChance: 0.55, speedMultiplier: 1.3,  fruitsPerWave: 4 }
     ],
     
     // Punteggio
