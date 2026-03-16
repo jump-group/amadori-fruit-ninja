@@ -312,7 +312,7 @@ const UI = (function() {
     
     function handleLeaderboardClick(e) {
         if (e) e.preventDefault();
-        showLeaderboard();
+        window.location.href = 'leaderboard.html';
     }
     
     function showLeaderboard() {

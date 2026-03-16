@@ -291,6 +291,13 @@ body {
     color: #FFC511;
 }
 
+.splash-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(0.6rem, 1.2vw, 1rem);
+}
+
 #start-button {
     background-color: #ffffff;
     color: #1B5E20;
@@ -310,6 +317,20 @@ body {
 
 #start-button:active {
     transform: scale(0.98);
+}
+
+.splash-leaderboard-btn {
+    color: #FFFFFF;
+    font-family: 'Barlow', sans-serif;
+    font-weight: 600;
+    font-size: clamp(0.85rem, 1.8vw, 1.1rem);
+    text-decoration: underline;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.splash-leaderboard-btn:hover {
+    opacity: 0.8;
 }
 
 .splash-stripes {
@@ -629,6 +650,94 @@ body {
 
 .leaderboard-empty.hidden {
     display: none;
+}
+
+/* ==============================================
+   Leaderboard Page (/leaderboard.html)
+   ============================================== */
+
+.lb-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(180deg, #135B3C 0%, #022D1A 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Barlow', sans-serif;
+    overflow: hidden;
+}
+
+.lb-page-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    width: 100%;
+    max-width: 700px;
+    padding: clamp(1.5rem, 3vw, 3rem) clamp(1rem, 3vw, 2rem);
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.lb-page-logo {
+    width: clamp(80px, 15vw, 180px);
+    height: auto;
+    margin-bottom: clamp(0.8rem, 1.5vw, 1.5rem);
+}
+
+.lb-page-title {
+    font-family: 'Barlow', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    color: #FFFFFF;
+    margin: 0 0 clamp(1rem, 2vw, 2rem) 0;
+    text-align: center;
+}
+
+.lb-page-card {
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    background-color: #FFFFFF;
+    border-radius: 24px;
+    padding: clamp(16px, 2vw, 32px);
+    box-sizing: border-box;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: clamp(1rem, 2vw, 2rem);
+}
+
+.lb-page-card .leaderboard-list {
+    max-height: none;
+}
+
+.lb-page-back-btn {
+    display: inline-block;
+    background-color: #FFFFFF;
+    color: #005832;
+    text-decoration: none;
+    font-family: 'Barlow', sans-serif;
+    font-weight: 700;
+    font-size: clamp(0.9rem, 1.8vw, 1.2rem);
+    padding: clamp(0.7rem, 1.2vw, 1rem) clamp(2rem, 4vw, 3rem);
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-bottom: clamp(0.5rem, 1vw, 1rem);
+    flex-shrink: 0;
+}
+
+.lb-page-back-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+}
+
+.lb-page-back-btn:active {
+    transform: scale(0.98);
 }
 
 @media (max-width: 1024px) {
