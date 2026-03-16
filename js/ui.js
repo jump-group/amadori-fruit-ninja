@@ -16,6 +16,8 @@ const UI = (function() {
     let scoreValue = null;
     let timerContainer = null;
     let timerValue = null;
+    let livesContainer = null;
+    let heartElements = null;
     let comboPopup = null;
     let comboTimeout = null;
     let gameOverPopup = null;
@@ -49,6 +51,8 @@ const UI = (function() {
         timerContainer = document.getElementById('timer-container');
         timerValue = document.getElementById('timer-value');
         comboPopup = document.getElementById('combo-popup');
+        livesContainer = document.getElementById('lives-container');
+        heartElements = livesContainer ? livesContainer.querySelectorAll('.life-heart') : [];
         gameOverPopup = document.getElementById('game-over-popup');
         gameOverScoreEl = document.getElementById('game-over-score-value');
         gameOverNicknameInput = document.getElementById('game-over-nickname');
@@ -128,6 +132,7 @@ const UI = (function() {
     function showGameLabels() {
         if (scoreContainer) scoreContainer.classList.remove('hidden');
         if (timerContainer) timerContainer.classList.remove('hidden');
+        if (livesContainer) livesContainer.classList.remove('hidden');
     }
     
     /**
@@ -136,6 +141,7 @@ const UI = (function() {
     function hideGameLabels() {
         if (scoreContainer) scoreContainer.classList.add('hidden');
         if (timerContainer) timerContainer.classList.add('hidden');
+        if (livesContainer) livesContainer.classList.add('hidden');
         hideCombo();
     }
     
@@ -266,6 +272,21 @@ const UI = (function() {
     }
     
     /**
+     * Aggiorna la visualizzazione delle vite
+     * @param {number} lives - Vite rimanenti (0-3)
+     */
+    function updateLives(lives) {
+        if (!heartElements) return;
+        for (var i = 0; i < heartElements.length; i++) {
+            if (i < lives) {
+                heartElements[i].classList.remove('lost');
+            } else {
+                heartElements[i].classList.add('lost');
+            }
+        }
+    }
+    
+    /**
      * Mostra il popup combo
      * @param {number} count - Numero di frutti nella combo
      * @param {number} bonus - Punti bonus ottenuti
@@ -343,6 +364,7 @@ const UI = (function() {
         hideGameLabels,
         updateScore,
         updateTimer,
+        updateLives,
         showCombo,
         hideCombo,
         createStartScreen,

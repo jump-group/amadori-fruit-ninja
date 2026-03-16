@@ -15,6 +15,10 @@
     let timeRemaining = 60;
     let timerEvent = null;
     
+    // Lives
+    const MAX_LIVES = 3;
+    let lives = MAX_LIVES;
+    
     // Combo tracking
     let swipeHits = 0;
     let pointerWasDown = false;
@@ -180,12 +184,14 @@
                     
                     gameStarted = true;
                     score = 0;
+                    lives = MAX_LIVES;
                     swipeHits = 0;
                     pointerWasDown = false;
                     timeRemaining = GameConfig.gameDuration;
                     
                     UI.showGameLabels();
                     UI.updateScore(0);
+                    UI.updateLives(lives);
                     UI.updateTimer(timeRemaining);
                     GameObjects.setDifficulty(0);
                     
@@ -416,13 +422,46 @@
     }
     
     /**
-     * Gestisce il colpo su una bomba: -10 punti (min 0), reset combo
+     * Gestisce il colpo su una bomba: -1 vita, -punti, reset combo.
+     * Se le vite arrivano a 0 → game over.
      */
     function onBadObjectHit(bomb) {
         GameObjects.killFruit(bomb);
         score = Math.max(0, score - GameConfig.bombPenalty);
         swipeHits = 0;
         UI.updateScore(score);
+        
+        lives--;
+        UI.updateLives(lives);
+        
+        if (lives <= 0) {
+            onLivesOver();
+        }
+    }
+    
+    /**
+     * Game over per esaurimento vite
+     */
+    function onLivesOver() {
+        if (!gameStarted) return;
+        gameStarted = false;
+        
+        if (timerEvent) {
+            game.time.events.remove(timerEvent);
+            timerEvent = null;
+        }
+        
+        var finalScore = score;
+        GameObjects.killAllObjects();
+        
+        score = 0;
+        swipeHits = 0;
+        points = [];
+        slashes.clear();
+        
+        game.time.events.add(400, function() {
+            showGameOver(finalScore);
+        });
     }
     
     /**

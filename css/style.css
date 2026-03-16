@@ -133,6 +133,35 @@ body {
 }
 
 /* ==============================================
+   Lives Container
+   ============================================== */
+
+#lives-container {
+    position: fixed;
+    top: calc(3.5% + clamp(66px, 4.7vw, 182px) + 10px);
+    right: 3.5%;
+    display: flex;
+    gap: clamp(4px, 0.5vw, 8px);
+    z-index: 60;
+    pointer-events: none;
+}
+
+#lives-container.hidden {
+    display: none;
+}
+
+.life-heart {
+    width: clamp(30px, 2.8vw, 56px);
+    height: auto;
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.life-heart.lost {
+    opacity: 0.2;
+    transform: scale(0.8);
+}
+
+/* ==============================================
    Combo Popup
    ============================================== */
 
