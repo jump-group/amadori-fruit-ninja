@@ -9,7 +9,7 @@ const GameConfig = {
     
     // Fisica e timing
     gravity: 300,
-    gameDuration: 60,
+    gameDuration: 45,
     
     // Livelli di difficoltà (ogni 20 secondi)
     difficulty: [
