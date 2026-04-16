@@ -231,7 +231,22 @@ body {
     display: none;
 }
 
+.splash-rainbow {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: auto;
+    z-index: 101;
+    pointer-events: none;
+    object-fit: cover;
+    object-position: right center;
+    transition: opacity 0.5s ease;
+}
+
 .splash-content {
+    position: relative;
+    z-index: 102;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -244,26 +259,26 @@ body {
 }
 
 .splash-logo {
-    width: clamp(100px, 20vw, 250px);
+    width: clamp(100px, 12vw, 200px);
     height: auto;
-    margin-bottom: clamp(1rem, 2vw, 2rem);
+    margin-bottom: clamp(20px, 4vh, 50px);
 }
 
 .splash-title-img {
-    width: clamp(140px, 28vw, 300px);
+    width: clamp(220px, 30vw, 460px);
     height: auto;
-    margin-bottom: clamp(0.5rem, 1.5vw, 1rem);
+    margin-bottom: clamp(16px, 3vh, 36px);
 }
 
 .splash-subtitle {
     color: #FFFFFF;
     font-family: 'Barlow', sans-serif;
     font-style: normal;
-    font-weight: 600;
-    font-size: clamp(1.1rem, 2.8vw, 96px);
-    line-height: 1.3;
+    font-weight: 700;
+    font-size: clamp(24px, 4vw, 64px);
+    line-height: 100%;
     text-align: center;
-    margin: 0 0 clamp(0.8rem, 1.5vw, 1.5rem) 0;
+    margin: 0 0 clamp(10px, 2vh, 24px) 0;
     max-width: 90%;
 }
 
@@ -272,11 +287,12 @@ body {
     font-family: 'Barlow', sans-serif;
     font-style: normal;
     font-weight: 500;
-    font-size: clamp(0.85rem, 1.67vw, 64px);
-    line-height: 1.4;
+    font-size: clamp(12px, 1.5vw, 22px);
+    line-height: 140%;
     text-align: center;
     margin: 0 0 clamp(1rem, 2vw, 2rem) 0;
-    max-width: 90%;
+    max-width: 600px;
+    opacity: 0.85;
 }
 
 .splash-description .text-pink {
@@ -299,15 +315,16 @@ body {
 }
 
 #start-button {
+    font-family: 'Barlow', sans-serif;
+    font-weight: 700;
+    font-size: clamp(16px, 2vw, 32px);
     background-color: #ffffff;
-    color: #1B5E20;
+    color: #005832;
     border: none;
-    border-radius: 50px;
-    padding: clamp(0.8rem, 1.5vw, 1rem) clamp(2rem, 4vw, 3rem);
-    font-size: clamp(0.9rem, 2vw, 1.4rem);
-    font-weight: bold;
+    border-radius: 100px;
+    padding: clamp(10px, 1.5vh, 20px) clamp(32px, 5vw, 80px);
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s ease;
 }
 
 #start-button:hover {
@@ -741,6 +758,27 @@ body {
 }
 
 @media (max-width: 1024px) {
+    .splash-logo {
+        width: clamp(160px, 25vw, 280px);
+    }
+
+    .splash-title-img {
+        width: clamp(240px, 50vw, 420px);
+    }
+
+    .splash-subtitle {
+        font-size: clamp(28px, 5vw, 52px);
+    }
+
+    .splash-description {
+        font-size: clamp(14px, 2.5vw, 20px);
+        max-width: 80vw;
+    }
+
+    #start-button {
+        font-size: clamp(18px, 3vw, 28px);
+    }
+
     .game-over-popup-box,
     .leaderboard-popup-box {
         width: clamp(320px, 60vw, 889px);
@@ -797,6 +835,29 @@ body {
     .leaderboard-list li {
         font-size: 14px;
         padding: 10px 14px;
+    }
+}
+
+@media (max-width: 600px) {
+    .splash-logo {
+        width: clamp(160px, 45vw, 240px);
+    }
+
+    .splash-title-img {
+        width: clamp(220px, 70vw, 360px);
+    }
+
+    .splash-subtitle {
+        font-size: clamp(24px, 7vw, 40px);
+    }
+
+    .splash-description {
+        font-size: clamp(12px, 3.5vw, 18px);
+        max-width: 85vw;
+    }
+
+    #start-button {
+        font-size: clamp(14px, 4vw, 22px);
     }
 }
 
